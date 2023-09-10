@@ -12,6 +12,7 @@ specifiers:
   '@nestjs/typeorm': ^10.0.0
   '@types/express': ^4.17.17
   '@types/jest': ^29.5.2
+  '@types/multer': ^1.4.7
   '@types/node': ^20.3.1
   '@types/supertest': ^2.0.12
   '@types/uuid': ^9.0.3
@@ -58,6 +59,7 @@ devDependencies:
   '@nestjs/testing': 10.2.4_wdonhtbt4hkqklfeqlyrysp5ta
   '@types/express': 4.17.17
   '@types/jest': 29.5.4
+  '@types/multer': 1.4.7
   '@types/node': 20.5.9
   '@types/supertest': 2.0.12
   '@types/uuid': 9.0.3
@@ -1256,6 +1258,12 @@ packages:
 
   /@types/mime/3.0.1:
     resolution: {integrity: sha512-Y4XFY5VJAuw0FgAqPNd6NNoV44jbq9Bz2L7Rh/J6jLTiHBSBJa9fxqQIvkIld4GsoDOcCbvzOUAbLPsSKKg+uA==}
+    dev: true
+
+  /@types/multer/1.4.7:
+    resolution: {integrity: sha512-/SNsDidUFCvqqcWDwxv2feww/yqhNeTRL5CVoL3jU4Goc4kKEL10T7Eye65ZqPNi4HRx8sAEX59pV1aEH7drNA==}
+    dependencies:
+      '@types/express': 4.17.17
     dev: true
 
   /@types/node/20.5.9:
