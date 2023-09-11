@@ -13,6 +13,7 @@ import { DataSource, Repository } from 'typeorm';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { validate as isUUID } from 'uuid';
 import { ProductImage, Product } from './entities';
+import { FilesService } from 'src/files/files.service';
 @Injectable()
 export class ProductsService {
     private readonly logger = new Logger();
@@ -22,22 +23,42 @@ export class ProductsService {
         @InjectRepository(ProductImage)
         private readonly productImageRepository: Repository<ProductImage>,
         private readonly dataSource: DataSource,
+        private readonly filesService: FilesService,
     ) {}
 
     async create(createProductDto: CreateProductDto) {
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
         try {
             const { images = [], ...productDetails } = createProductDto;
-
-            const product = this.productRepository.create({
+            const product = queryRunner.manager.create(Product, {
                 ...productDetails,
-                images: images.map((image) =>
-                    this.productImageRepository.create({ url: image }),
-                ),
+                images: images.map((image) => {
+                    const imageKey = queryRunner.manager.create(ProductImage, {
+                        url: image,
+                    });
+                    return imageKey;
+                }),
             });
-            await this.productRepository.save(product);
 
-            return { ...product, images };
+            let imagesCdn = [];
+            if (images.length > 0)
+                imagesCdn =
+                    await this.filesService.moveToPermanentLocations(images);
+
+            await queryRunner.manager.save(product);
+            await queryRunner.commitTransaction();
+            await queryRunner.release();
+
+            return {
+                ...product,
+                images: imagesCdn,
+            };
         } catch (error) {
+            await queryRunner.rollbackTransaction();
+            await queryRunner.release();
+
             this.handleDBExceptions(error);
         }
     }

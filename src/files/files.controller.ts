@@ -1,23 +1,26 @@
 import {
+    Body,
     Controller,
     FileTypeValidator,
     MaxFileSizeValidator,
     ParseFilePipe,
     Post,
-    UploadedFile,
+    Res,
+    UploadedFiles,
     UseInterceptors,
 } from '@nestjs/common';
 import { FilesService } from './files.service';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
 
 @Controller('files')
 export class FilesController {
     constructor(private readonly filesService: FilesService) {}
 
     @Post('product')
-    @UseInterceptors(FileInterceptor('file'))
-    uploadProductImage(
-        @UploadedFile(
+    @UseInterceptors(FilesInterceptor('files', 3))
+    uploadTempProductImage(
+        @UploadedFiles(
             new ParseFilePipe({
                 validators: [
                     new FileTypeValidator({ fileType: '.(png|jpeg|jpg|gif)' }),
@@ -25,8 +28,14 @@ export class FilesController {
                 ],
             }),
         )
-        file: Express.Multer.File,
+        files: Array<Express.Multer.File>,
+        @Res({ passthrough: true }) response: Response,
     ) {
-        return this.filesService.uploadFile(file);
+        return this.filesService.uploadTempFiles(files, response);
+    }
+
+    @Post('product-multiple')
+    moveProductImage(@Body() tempKeys: string[]) {
+        return this.filesService.moveToPermanentLocations(tempKeys);
     }
 }
