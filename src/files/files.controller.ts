@@ -1,6 +1,7 @@
 import {
     Body,
     Controller,
+    Delete,
     FileTypeValidator,
     MaxFileSizeValidator,
     ParseFilePipe,
@@ -34,8 +35,8 @@ export class FilesController {
         return this.filesService.uploadTempFiles(files, response);
     }
 
-    @Post('product-multiple')
-    moveProductImage(@Body() tempKeys: string[]) {
-        return this.filesService.moveToPermanentLocations(tempKeys);
+    @Delete('product')
+    deleteFiles(@Body() body: { keys: string[] }) {
+        return this.filesService.deleteFiles(body.keys);
     }
 }

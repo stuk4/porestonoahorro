@@ -13,6 +13,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { v4 as uuid } from 'uuid';
 import { Response } from 'express';
+import { getPathOrOriginal } from './utils/get-path-or-original';
 @Injectable()
 export class FilesService {
     private readonly s3BucketName: string;
@@ -30,7 +31,11 @@ export class FilesService {
     ): Promise<string[]> {
         try {
             const keys: string[] = files.map(
-                (file) => `temp/product/${uuid()}/${file.originalname}`,
+                (file) =>
+                    `temp/product/${uuid()}/${file.originalname.replace(
+                        /\s+/g,
+                        '',
+                    )}`,
             );
 
             const sendPromises = keys.map((key, index) =>
@@ -145,5 +150,25 @@ export class FilesService {
         return permanentKeys.map(
             (key) => `${this.configService.get('CDN_URL')}/${key}`,
         );
+    }
+    async deleteFiles(keys: string[]): Promise<void> {
+        const deletePromises = keys.map((key) => {
+            return this.s3Client
+                .send(
+                    new DeleteObjectCommand({
+                        Bucket: this.s3BucketName,
+                        Key: getPathOrOriginal(key),
+                    }),
+                )
+                .then(() => {
+                    this.logger.log(`File ${key} deleted successfully.`);
+                })
+                .catch((error) => {
+                    this.logger.error(
+                        `Error deleting file ${key}: ${error.message}`,
+                    );
+                });
+        });
+        await Promise.allSettled(deletePromises);
     }
 }
