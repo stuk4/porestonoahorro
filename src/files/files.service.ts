@@ -30,14 +30,15 @@ export class FilesService {
         response: Response,
     ): Promise<string[]> {
         try {
+            const uuidFile = uuid();
             const keys: string[] = files.map(
                 (file) =>
-                    `temp/product/${uuid()}/${file.originalname.replace(
+                    `temp/product/${uuidFile}/${file.originalname.replace(
                         /\s+/g,
                         '',
                     )}`,
             );
-
+            this.logger.debug(`FILE SIZE ${files[0].size / 1024 / 1024} mb`);
             const sendPromises = keys.map((key, index) =>
                 this.s3Client.send(
                     new PutObjectCommand({
@@ -81,7 +82,7 @@ export class FilesService {
             throw new InternalServerErrorException('Failed to upload files.');
         }
     }
-
+    // TODO: recibir el uuid del producto y el nombre de la imagen
     async moveToPermanentLocations(tempKeys: string[]): Promise<string[]> {
         const movePromises = tempKeys.map((tempKey) => {
             const permanentKey = tempKey.replace('temp/', '');
@@ -141,7 +142,7 @@ export class FilesService {
                         );
                     });
             });
-            await Promise.all(deletePromises);
+            await Promise.allSettled(deletePromises);
             throw new InternalServerErrorException(
                 `Error moving the following files: ${failedKeys.join(', ')}.`,
             );

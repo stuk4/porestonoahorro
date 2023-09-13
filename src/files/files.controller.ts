@@ -13,6 +13,7 @@ import {
 import { FilesService } from './files.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
+import { SharpImagePipe } from './pipes/sharp-image/sharp-image.pipe';
 
 @Controller('files')
 export class FilesController {
@@ -25,9 +26,10 @@ export class FilesController {
             new ParseFilePipe({
                 validators: [
                     new FileTypeValidator({ fileType: '.(png|jpeg|jpg|gif)' }),
-                    new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 3 }),
+                    new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 4 }),
                 ],
             }),
+            SharpImagePipe,
         )
         files: Array<Express.Multer.File>,
         @Res({ passthrough: true }) response: Response,
