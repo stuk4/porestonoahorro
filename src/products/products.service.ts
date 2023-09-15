@@ -14,6 +14,8 @@ import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { validate as isUUID } from 'uuid';
 import { ProductImage, Product } from './entities';
 import { FilesService } from 'src/files/files.service';
+import { ProductStatus } from './entities/product.entity';
+
 @Injectable()
 export class ProductsService {
     private readonly logger = new Logger();
@@ -39,11 +41,16 @@ export class ProductsService {
                     await this.filesService.moveToPermanentLocations(images);
             const product = queryRunner.manager.create(Product, {
                 ...productDetails,
+                status: ProductStatus.PUBLISHED,
+                thumbnail_url: imagesCdn[0],
                 images: imagesCdn.map((image) => {
-                    const imageKey = queryRunner.manager.create(ProductImage, {
-                        url: image,
-                    });
-                    return imageKey;
+                    const productImage = queryRunner.manager.create(
+                        ProductImage,
+                        {
+                            url: image,
+                        },
+                    );
+                    return productImage;
                 }),
             });
 
@@ -58,7 +65,10 @@ export class ProductsService {
         } catch (error) {
             await queryRunner.rollbackTransaction();
             await queryRunner.release();
-            if (images.length > 0) this.filesService.deleteFiles(imagesCdn);
+
+            if (images.length > 0) {
+                this.filesService.deleteFiles(imagesCdn);
+            }
             this.handleDBExceptions(error);
         }
     }
@@ -67,19 +77,13 @@ export class ProductsService {
         const { perPage = 10, page = 1 } = paginationDto;
 
         const [products, total] = await this.productRepository.findAndCount({
+            where: { status: ProductStatus.PUBLISHED },
             take: perPage,
             skip: (page - 1) * perPage,
-            relations: {
-                images: true,
-            },
         });
-        const productPlain = products.map(({ images, ...rest }) => ({
-            ...rest,
-            images: images.map(({ url }) => url),
-        }));
 
         return {
-            data: productPlain,
+            data: products,
             meta: {
                 total,
                 page,
@@ -135,7 +139,7 @@ export class ProductsService {
         let imagesCdn: string[] = [];
         try {
             let existingImages: ProductImage[] = [];
-            if (images) {
+            if (images && images.length > 0) {
                 existingImages = await queryRunner.manager.find(ProductImage, {
                     where: { product: { uuid } },
                 });
@@ -146,6 +150,7 @@ export class ProductsService {
 
                 imagesCdn =
                     await this.filesService.moveToPermanentLocations(images);
+                product.thumbnail_url = imagesCdn[0];
                 product.images = imagesCdn.map((image) =>
                     this.productImageRepository.create({ url: image }),
                 );
@@ -170,6 +175,8 @@ export class ProductsService {
 
     async remove(uuid: string) {
         const product = await this.findOne(uuid);
+        const imageKeys = product.images.map(({ url }) => url);
+        this.filesService.deleteFiles(imageKeys);
         await this.productRepository.remove(product);
     }
 

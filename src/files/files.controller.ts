@@ -13,7 +13,7 @@ import {
 import { FilesService } from './files.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
-import { SharpImagePipe } from './pipes/sharp-image/sharp-image.pipe';
+import { SharpImagePipe } from './pipes/sharp-image.pipe';
 
 @Controller('files')
 export class FilesController {

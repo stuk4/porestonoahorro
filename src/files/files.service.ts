@@ -8,12 +8,15 @@ import { ConfigService } from '@nestjs/config';
 import {
     CopyObjectCommand,
     DeleteObjectCommand,
+    GetObjectCommand,
     PutObjectCommand,
     S3Client,
 } from '@aws-sdk/client-s3';
 import { v4 as uuid } from 'uuid';
 import { Response } from 'express';
 import { getPathOrOriginal } from './utils/get-path-or-original';
+import { createThumbnailSize } from './utils/process-image';
+
 @Injectable()
 export class FilesService {
     private readonly s3BucketName: string;
@@ -82,8 +85,11 @@ export class FilesService {
             throw new InternalServerErrorException('Failed to upload files.');
         }
     }
-    // TODO: recibir el uuid del producto y el nombre de la imagen
+
     async moveToPermanentLocations(tempKeys: string[]): Promise<string[]> {
+        if (tempKeys.length === 0) return [];
+        const thumbnailImage = this.generateThmbnail(tempKeys[0]);
+        this.logger.debug(thumbnailImage);
         const movePromises = tempKeys.map((tempKey) => {
             const permanentKey = tempKey.replace('temp/', '');
             return this.s3Client
@@ -108,7 +114,10 @@ export class FilesService {
                 });
         });
 
-        const results = await Promise.allSettled(movePromises);
+        const results = await Promise.allSettled([
+            thumbnailImage,
+            ...movePromises,
+        ]);
 
         const permanentKeys: string[] = [];
         const failedKeys: string[] = [];
@@ -171,5 +180,56 @@ export class FilesService {
                 });
         });
         await Promise.allSettled(deletePromises);
+    }
+
+    private async generateThmbnail(key: string): Promise<string> {
+        try {
+            const { Body, ContentType } = await this.s3Client.send(
+                new GetObjectCommand({
+                    Bucket: this.s3BucketName,
+                    Key: key,
+                }),
+            );
+            const keySplited = key.split('/');
+            const filename = keySplited[keySplited.length - 1];
+            const permanentKey = key
+                .replace('temp/', '')
+                .replace(filename, `thumbnail/image.webp`);
+            if (Body) {
+                const byteArray = await Body.transformToByteArray();
+                const thumbnailBuffer = await createThumbnailSize(byteArray);
+                this.logger.debug(ContentType);
+
+                const uploaded = this.s3Client
+                    .send(
+                        new PutObjectCommand({
+                            Bucket: this.s3BucketName,
+                            Key: permanentKey,
+                            ContentLength: thumbnailBuffer.length,
+                            Body: thumbnailBuffer,
+
+                            ContentType: ContentType,
+                        }),
+                    )
+                    .then(() => {
+                        this.logger.log(
+                            `File moved from ${key} to ${permanentKey} successfully.`,
+                        );
+                        return permanentKey;
+                    })
+                    .catch((error) => {
+                        this.logger.error(
+                            `Error moving file from ${key} to permanent location: ${error.message}`,
+                        );
+                        throw key;
+                    });
+                return uploaded;
+            } else {
+                throw new InternalServerErrorException('No file body found');
+            }
+        } catch (err) {
+            this.logger.error(err);
+            throw new InternalServerErrorException('Error creating thumbnail.');
+        }
     }
 }

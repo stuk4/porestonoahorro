@@ -51,6 +51,12 @@ export class Product {
     })
     status: ProductStatus;
 
+    @Column('text', {
+        nullable: false,
+    })
+    thumbnail_url: string;
+
+    @Column('text')
     @CreateDateColumn({
         type: 'timestamp',
         default: () => 'CURRENT_TIMESTAMP(6)',
@@ -66,7 +72,7 @@ export class Product {
 
     @OneToMany(() => ProductImage, (productImage) => productImage.product, {
         cascade: true,
-        eager: true,
+        eager: false,
     })
     images?: ProductImage[];
 
