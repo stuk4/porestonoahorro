@@ -7,7 +7,7 @@ import {
     IsNumber,
     IsArray,
 } from 'class-validator';
-import { ProductStatus } from '../entities/product.entity';
+import { Status } from 'src/common/interfaces/common.interfaces';
 
 export class CreateProductDto {
     @IsString()
@@ -24,8 +24,8 @@ export class CreateProductDto {
     price?: number;
 
     @IsOptional()
-    @IsEnum(ProductStatus)
-    status?: ProductStatus;
+    @IsEnum(Status)
+    status?: Status;
 
     @IsString({ each: true })
     @IsArray()

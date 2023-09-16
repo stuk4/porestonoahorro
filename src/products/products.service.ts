@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     ConflictException,
     Injectable,
     InternalServerErrorException,
@@ -9,19 +10,19 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { DataSource, Not, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { validate as isUUID } from 'uuid';
-import { ProductImage, Product } from './entities';
+import { ProductImage } from './entities';
 import { FilesService } from 'src/files/files.service';
-import { ProductStatus } from './entities/product.entity';
+import { Status } from 'src/common/interfaces/common.interfaces';
+import { ProductRepository } from './products.repository';
 
 @Injectable()
 export class ProductsService {
     private readonly logger = new Logger();
     constructor(
-        @InjectRepository(Product)
-        private readonly productRepository: Repository<Product>,
+        private readonly productRepository: ProductRepository,
         @InjectRepository(ProductImage)
         private readonly productImageRepository: Repository<ProductImage>,
         private readonly dataSource: DataSource,
@@ -30,46 +31,27 @@ export class ProductsService {
 
     async create(createProductDto: CreateProductDto) {
         const { images = [], ...productDetails } = createProductDto;
-        const queryRunner = this.dataSource.createQueryRunner();
-        await queryRunner.connect();
-        await queryRunner.startTransaction();
-
         let imagesCdn = [];
         try {
-            if (images.length > 0)
+            if (images.length > 0) {
                 imagesCdn =
                     await this.filesService.moveToPermanentLocations(images);
-            const product = queryRunner.manager.create(Product, {
-                ...productDetails,
-                status: ProductStatus.PUBLISHED,
-                thumbnail_url: imagesCdn[0],
-                images: imagesCdn.map((image) => {
-                    const productImage = queryRunner.manager.create(
-                        ProductImage,
-                        {
-                            url: image,
-                        },
-                    );
-                    return productImage;
-                }),
-            });
-
-            await queryRunner.manager.save(product);
-            await queryRunner.commitTransaction();
-            await queryRunner.release();
+            }
+            const product =
+                await this.productRepository.createProductWithImages(
+                    productDetails,
+                    imagesCdn,
+                );
 
             return {
                 ...product,
                 images: imagesCdn,
             };
         } catch (error) {
-            await queryRunner.rollbackTransaction();
-            await queryRunner.release();
-
             if (images.length > 0) {
                 this.filesService.deleteFiles(imagesCdn);
             }
-            this.handleDBExceptions(error);
+            this.handleDBExceptions(error, 'create');
         }
     }
 
@@ -77,7 +59,7 @@ export class ProductsService {
         const { perPage = 10, page = 1 } = paginationDto;
 
         const [products, total] = await this.productRepository.findAndCount({
-            where: { status: ProductStatus.PUBLISHED },
+            where: { status: Status.PUBLISHED },
             take: perPage,
             skip: (page - 1) * perPage,
         });
@@ -95,13 +77,12 @@ export class ProductsService {
     }
 
     async findOne(term: string) {
-        let product: Product;
-        if (isUUID(term)) {
-            product = await this.productRepository.findOneBy({ uuid: term });
-        } else {
-            product = await this.productRepository.findOneBy({ slug: term });
-        }
+        const findOptions = {
+            where: isUUID(term) ? { uuid: term } : { slug: term },
+            relations: ['images'],
+        };
 
+        const product = await this.productRepository.findOne(findOptions);
         if (!product)
             throw new NotFoundException(`Product  with term ${term} not found`);
 
@@ -114,62 +95,35 @@ export class ProductsService {
     }
     async update(uuid: string, updateProductDto: UpdateProductDto) {
         const { images, ...toUpdate } = updateProductDto;
-
-        const existingProductWithSlug = await this.productRepository.findOne({
-            where: {
-                title: toUpdate.title,
-                uuid: Not(uuid), // Exclude current product
-            },
-        });
-
-        if (existingProductWithSlug) {
-            throw new ConflictException(
-                'This title is already in use by another product.',
-            );
+        if (images.length == 0) {
+            this.logger.error('At least one image is required');
+            throw new BadRequestException('At least one image is required');
         }
-        const product = await this.productRepository.preload({
-            uuid,
-            ...toUpdate,
-        });
-        if (!product) throw new NotFoundException(`Product #${uuid} not found`);
-        // Create query runner (atomic transactions)
-        const queryRunner = this.dataSource.createQueryRunner();
-        await queryRunner.connect();
-        await queryRunner.startTransaction();
+
         let imagesCdn: string[] = [];
         try {
-            let existingImages: ProductImage[] = [];
             if (images && images.length > 0) {
-                existingImages = await queryRunner.manager.find(ProductImage, {
-                    where: { product: { uuid } },
-                });
-
-                await queryRunner.manager.delete(ProductImage, {
-                    product: { uuid },
-                });
-
                 imagesCdn =
                     await this.filesService.moveToPermanentLocations(images);
-                product.thumbnail_url = imagesCdn[0];
-                product.images = imagesCdn.map((image) =>
-                    this.productImageRepository.create({ url: image }),
-                );
             }
 
-            await queryRunner.manager.save(product);
-            await queryRunner.commitTransaction();
-            await queryRunner.release();
-            if (images && existingImages.length > 0)
-                await this.filesService.deleteFiles(
-                    existingImages.map(({ url }) => url),
+            const updatedProduct =
+                await this.productRepository.updateProductWithImages(
+                    uuid,
+                    toUpdate,
+                    imagesCdn,
                 );
+            if (!updatedProduct)
+                throw new NotFoundException(`Product #${uuid} not found`);
+            const { images: updatedImages, ...rest } = updatedProduct;
 
-            return this.findOnePlain(uuid);
+            return {
+                ...rest,
+                images: updatedImages.map(({ url }) => url),
+            };
         } catch (error) {
-            await queryRunner.rollbackTransaction();
-            await queryRunner.release();
             if (imagesCdn.length > 0) this.filesService.deleteFiles(imagesCdn);
-            this.handleDBExceptions(error, true);
+            this.handleDBExceptions(error, 'update');
         }
     }
 
@@ -185,15 +139,21 @@ export class ProductsService {
         try {
             return await query.delete().where({}).execute();
         } catch (error) {
-            this.handleDBExceptions(error);
+            this.handleDBExceptions(error, 'delete');
         }
     }
-    private handleDBExceptions(error: any, updating = false) {
+    private handleDBExceptions(
+        error: any,
+        errorType: 'create' | 'update' | 'delete' | 'find',
+    ) {
+        // Si el error es una NotFoundException, simplemente lo relanzamos
+        if (error instanceof NotFoundException) {
+            throw error;
+        }
+        // Duplicados en campos únicos
         if (error.code === '23505') throw new ConflictException(error.detail);
         this.logger.error(error);
 
-        throw new InternalServerErrorException(
-            `Error ${updating ? 'update' : 'create'} product`,
-        );
+        throw new InternalServerErrorException(`Error on ${errorType} product`);
     }
 }

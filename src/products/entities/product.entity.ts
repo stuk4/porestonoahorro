@@ -4,17 +4,16 @@ import {
     Column,
     CreateDateColumn,
     Entity,
+    JoinTable,
+    ManyToMany,
     OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
-import { slugify } from '../utils/slugify';
+import { slugify } from '../../common/utils/slugify';
 import { ProductImage } from './product-image.entity';
-export enum ProductStatus {
-    DRAFT = 'draft',
-    PUBLISHED = 'published',
-    ARCHIVED = 'archived',
-}
+import { Status } from 'src/common/interfaces/common.interfaces';
+import { Tag } from 'src/tags/entities/tag.entity';
 
 @Entity()
 export class Product {
@@ -46,10 +45,10 @@ export class Product {
     price?: number;
 
     @Column('enum', {
-        enum: ProductStatus,
-        default: ProductStatus.DRAFT,
+        enum: Status,
+        default: Status.DRAFT,
     })
-    status: ProductStatus;
+    status: Status;
 
     @Column('text', {
         nullable: false,
@@ -75,6 +74,24 @@ export class Product {
         eager: false,
     })
     images?: ProductImage[];
+
+    @ManyToMany(
+        () => Tag,
+        (tag) => tag.products, //optional
+        { onDelete: 'NO ACTION', onUpdate: 'NO ACTION' },
+    )
+    @JoinTable({
+        name: 'product_tag',
+        joinColumn: {
+            name: 'product_uuid',
+            referencedColumnName: 'uuid',
+        },
+        inverseJoinColumn: {
+            name: 'tag_uuid',
+            referencedColumnName: 'uuid',
+        },
+    })
+    tags?: Tag[];
 
     @BeforeInsert()
     updateSlug() {
