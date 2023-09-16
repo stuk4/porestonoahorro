@@ -7,7 +7,7 @@ import {
     IsNumber,
     IsArray,
 } from 'class-validator';
-import { Status } from 'src/common/interfaces/common.interfaces';
+import { Status } from '../../common/interfaces/common.interfaces';
 
 export class CreateProductDto {
     @IsString()

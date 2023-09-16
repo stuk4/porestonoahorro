@@ -8,6 +8,7 @@ import { FilesModule } from './files/files.module';
 
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TagsModule } from './tags/tags.module';
+import { ProductTagModule } from './product-tag/product-tag.module';
 @Module({
     imports: [
         ConfigModule.forRoot(),
@@ -32,6 +33,7 @@ import { TagsModule } from './tags/tags.module';
         SeedModule,
         FilesModule,
         TagsModule,
+        ProductTagModule,
     ],
     controllers: [],
     providers: [],

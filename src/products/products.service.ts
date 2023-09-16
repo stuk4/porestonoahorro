@@ -8,24 +8,19 @@ import {
 } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { InjectRepository } from '@nestjs/typeorm';
 
-import { DataSource, Repository } from 'typeorm';
-import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { validate as isUUID } from 'uuid';
-import { ProductImage } from './entities';
-import { FilesService } from 'src/files/files.service';
-import { Status } from 'src/common/interfaces/common.interfaces';
+
 import { ProductRepository } from './products.repository';
+import { PaginationDto } from '../common/dtos/pagination.dto';
+import { FilesService } from '../files/files.service';
+import { Status } from '../common/interfaces/common.interfaces';
 
 @Injectable()
 export class ProductsService {
     private readonly logger = new Logger();
     constructor(
         private readonly productRepository: ProductRepository,
-        @InjectRepository(ProductImage)
-        private readonly productImageRepository: Repository<ProductImage>,
-        private readonly dataSource: DataSource,
         private readonly filesService: FilesService,
     ) {}
 

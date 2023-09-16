@@ -2,8 +2,9 @@ import { DataSource, Repository } from 'typeorm';
 import { Product, ProductImage } from './entities';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Status } from 'src/common/interfaces/common.interfaces';
+
 import { UpdateProductDto } from './dto/update-product.dto';
+import { Status } from '../common/interfaces/common.interfaces';
 
 @Injectable()
 export class ProductRepository extends Repository<Product> {
@@ -84,7 +85,7 @@ export class ProductRepository extends Repository<Product> {
                         product: { uuid },
                     });
                 }
-                this.logger.debug(`Images to be saved: ${imagesCdn}`);
+
                 product.thumbnail_url = imagesCdn[0];
                 product.images = imagesCdn.map((image) =>
                     this.manager.create(ProductImage, { url: image }),

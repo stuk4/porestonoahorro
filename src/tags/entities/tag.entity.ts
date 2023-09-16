@@ -1,5 +1,3 @@
-import { Status } from 'src/common/interfaces/common.interfaces';
-import { Product } from 'src/products/entities';
 import {
     Column,
     CreateDateColumn,
@@ -8,6 +6,8 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
+import { Status } from '../../common/interfaces/common.interfaces';
+import { Product } from '../../products/entities';
 
 @Entity()
 export class Tag {

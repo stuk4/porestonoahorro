@@ -3,8 +3,9 @@ import { ProductsService } from './products.service';
 import { ProductsController } from './products.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Product, ProductImage } from './entities';
-import { FilesModule } from 'src/files/files.module';
+
 import { ProductRepository } from './products.repository';
+import { FilesModule } from '../files/files.module';
 
 @Module({
     controllers: [ProductsController],

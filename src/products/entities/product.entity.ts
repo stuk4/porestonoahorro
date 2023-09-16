@@ -12,8 +12,8 @@ import {
 } from 'typeorm';
 import { slugify } from '../../common/utils/slugify';
 import { ProductImage } from './product-image.entity';
-import { Status } from 'src/common/interfaces/common.interfaces';
-import { Tag } from 'src/tags/entities/tag.entity';
+import { Status } from '../../common/interfaces/common.interfaces';
+import { Tag } from '../../tags/entities/tag.entity';
 
 @Entity()
 export class Product {
