@@ -41,7 +41,7 @@ export class FilesService {
                         '',
                     )}`,
             );
-            this.logger.debug(`FILE SIZE ${files[0].size / 1024 / 1024} mb`);
+
             const sendPromises = keys.map((key, index) =>
                 this.s3Client.send(
                     new PutObjectCommand({
@@ -87,9 +87,9 @@ export class FilesService {
     }
 
     async moveToPermanentLocations(tempKeys: string[]): Promise<string[]> {
-        if (tempKeys.length === 0) return [];
+        if (tempKeys && tempKeys.length === 0) return [];
         const thumbnailImage = this.generateThmbnail(tempKeys[0]);
-        this.logger.debug(thumbnailImage);
+
         const movePromises = tempKeys.map((tempKey) => {
             const permanentKey = tempKey.replace('temp/', '');
             return this.s3Client
@@ -198,7 +198,6 @@ export class FilesService {
             if (Body) {
                 const byteArray = await Body.transformToByteArray();
                 const thumbnailBuffer = await createThumbnailSize(byteArray);
-                this.logger.debug(ContentType);
 
                 const uploaded = this.s3Client
                     .send(

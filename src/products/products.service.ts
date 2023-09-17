@@ -1,5 +1,4 @@
 import {
-    BadRequestException,
     ConflictException,
     Injectable,
     InternalServerErrorException,
@@ -74,7 +73,7 @@ export class ProductsService {
     async findOne(term: string) {
         const findOptions = {
             where: isUUID(term) ? { uuid: term } : { slug: term },
-            relations: ['images'],
+            relations: ['images', 'tags'],
         };
 
         const product = await this.productRepository.findOne(findOptions);
@@ -90,34 +89,31 @@ export class ProductsService {
     }
     async update(uuid: string, updateProductDto: UpdateProductDto) {
         const { images, ...toUpdate } = updateProductDto;
-        if (images.length == 0) {
-            this.logger.error('At least one image is required');
-            throw new BadRequestException('At least one image is required');
-        }
 
         let imagesCdn: string[] = [];
         try {
-            if (images && images.length > 0) {
-                imagesCdn =
-                    await this.filesService.moveToPermanentLocations(images);
-            }
+            imagesCdn =
+                await this.filesService.moveToPermanentLocations(images);
 
             const updatedProduct =
                 await this.productRepository.updateProductWithImages(
                     uuid,
-                    toUpdate,
+                    { ...toUpdate, images },
                     imagesCdn,
                 );
             if (!updatedProduct)
                 throw new NotFoundException(`Product #${uuid} not found`);
-            const { images: updatedImages, ...rest } = updatedProduct;
-
+            // const updatedProductImages = updatedProduct.images
             return {
-                ...rest,
-                images: updatedImages.map(({ url }) => url),
+                ...updatedProduct,
+                images:
+                    updatedProduct.images && updatedProduct.images.length > 0
+                        ? updatedProduct.images.map(({ url }) => url)
+                        : [],
             };
         } catch (error) {
-            if (imagesCdn.length > 0) this.filesService.deleteFiles(imagesCdn);
+            if (imagesCdn && imagesCdn.length > 0)
+                this.filesService.deleteFiles(imagesCdn);
             this.handleDBExceptions(error, 'update');
         }
     }

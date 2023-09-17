@@ -1,10 +1,12 @@
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { Product, ProductImage } from './entities';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Status } from '../common/interfaces/common.interfaces';
+import { CreateProductDto } from './dto/create-product.dto';
+import { Tag } from '../tags/entities/tag.entity';
 
 @Injectable()
 export class ProductRepository extends Repository<Product> {
@@ -21,14 +23,23 @@ export class ProductRepository extends Repository<Product> {
         );
     }
 
-    async createProductWithImages(productDetails, imagesCdn): Promise<Product> {
+    async createProductWithImages(
+        productDetails: CreateProductDto,
+        imagesCdn: string[],
+    ): Promise<Product> {
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { images, tags: tagsUUIDs, ...productDetail } = productDetails;
+
         try {
+            const tags = await queryRunner.manager.findBy(Tag, {
+                uuid: In(tagsUUIDs),
+            });
             const product = queryRunner.manager.create(Product, {
-                ...productDetails,
+                ...productDetail,
                 status: Status.PUBLISHED,
                 thumbnail_url: imagesCdn[0],
                 images: imagesCdn.map((image) => {
@@ -40,6 +51,7 @@ export class ProductRepository extends Repository<Product> {
                     );
                     return productImage;
                 }),
+                tags,
             });
 
             await queryRunner.manager.save(product);
@@ -64,29 +76,36 @@ export class ProductRepository extends Repository<Product> {
         await queryRunner.startTransaction();
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { images, ...productDetails } = toUpdate;
+        const { images, tags: tagsUUIDs, ...productDetails } = toUpdate;
         try {
-            const product = await this.productRepository.preload({
-                uuid,
-                ...productDetails,
+            const product = await queryRunner.manager.findOne(Product, {
+                where: { uuid },
+                relations: ['tags', 'images'],
             });
+
             if (!product) {
                 return null;
             }
-            if (imagesCdn.length > 0) {
-                const existingImages = await queryRunner.manager.find(
-                    ProductImage,
-                    {
-                        where: { product: { uuid } },
-                    },
-                );
-                if (existingImages.length > 0) {
+
+            // Actualiza las propiedades básicas del producto
+            Object.assign(product, productDetails);
+
+            const tags = await queryRunner.manager.findBy(Tag, {
+                uuid: In(tagsUUIDs),
+            });
+
+            // Se actualizan tags al producto
+            product.tags = tags;
+
+            if (imagesCdn && imagesCdn.length > 0) {
+                if (images && images.length > 0) {
                     await queryRunner.manager.delete(ProductImage, {
                         product: { uuid },
                     });
                 }
 
                 product.thumbnail_url = imagesCdn[0];
+
                 product.images = imagesCdn.map((image) =>
                     this.manager.create(ProductImage, { url: image }),
                 );

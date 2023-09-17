@@ -1,4 +1,6 @@
 import {
+    BeforeInsert,
+    BeforeUpdate,
     Column,
     CreateDateColumn,
     Entity,
@@ -8,6 +10,8 @@ import {
 } from 'typeorm';
 import { Status } from '../../common/interfaces/common.interfaces';
 import { Product } from '../../products/entities';
+import { slugify } from '../../common/utils/slugify';
+import { normalizeTagName } from '../utils/normalize';
 
 @Entity()
 export class Tag {
@@ -27,10 +31,10 @@ export class Tag {
     slug: string;
 
     @Column('text', {
-        nullable: false,
+        nullable: true,
         comment: 'Description of the tag',
     })
-    description: string;
+    description?: string;
 
     @Column('enum', {
         enum: Status,
@@ -57,4 +61,16 @@ export class Tag {
         onUpdate: 'NO ACTION',
     })
     products?: Product[];
+
+    @BeforeInsert()
+    updateSlugAndName() {
+        this.name = normalizeTagName(this.name);
+        this.slug = slugify(this.name);
+    }
+
+    @BeforeUpdate()
+    updateSlugAndNameOnUpdate() {
+        this.name = normalizeTagName(this.name);
+        this.slug = slugify(this.name);
+    }
 }
