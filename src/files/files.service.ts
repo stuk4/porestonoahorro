@@ -88,7 +88,6 @@ export class FilesService {
 
     async moveToPermanentLocations(tempKeys: string[]): Promise<string[]> {
         if (tempKeys && tempKeys.length === 0) return [];
-        const thumbnailImage = this.generateThmbnail(tempKeys[0]);
 
         const movePromises = tempKeys.map((tempKey) => {
             const permanentKey = tempKey.replace('temp/', '');
@@ -113,7 +112,7 @@ export class FilesService {
                     throw tempKey; // Lanzamos el tempKey como error para recogerlo después
                 });
         });
-
+        const thumbnailImage = this.generateThmbnail(tempKeys[0]);
         const results = await Promise.allSettled([
             thumbnailImage,
             ...movePromises,
