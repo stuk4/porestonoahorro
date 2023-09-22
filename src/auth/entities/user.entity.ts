@@ -5,7 +5,7 @@ import {
     Entity,
     PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UserRoles } from '../interfaces/user.interfaces';
+import { Role } from '../interfaces/auth.interfaces';
 
 @Entity()
 export class User {
@@ -28,11 +28,11 @@ export class User {
     is_active: boolean;
 
     @Column('enum', {
-        enum: UserRoles,
+        enum: Role,
         array: true,
-        default: [UserRoles.USER],
+        default: [Role.USER],
     })
-    roles: UserRoles[];
+    roles: Role[];
 
     @BeforeInsert()
     checkFieldsBeforeInsert() {
