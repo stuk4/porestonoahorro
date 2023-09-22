@@ -3,6 +3,7 @@ import { FilesService } from './files.service';
 import { FilesController } from './files.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { S3Client } from '@aws-sdk/client-s3';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
     controllers: [FilesController],
@@ -30,7 +31,7 @@ import { S3Client } from '@aws-sdk/client-s3';
             inject: [ConfigService],
         },
     ],
-    imports: [ConfigModule],
+    imports: [ConfigModule, AuthModule],
     exports: [FilesService],
 })
 export class FilesModule {}

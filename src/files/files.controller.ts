@@ -1,7 +1,5 @@
 import {
-    Body,
     Controller,
-    Delete,
     FileTypeValidator,
     MaxFileSizeValidator,
     ParseFilePipe,
@@ -14,12 +12,15 @@ import { FilesService } from './files.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { SharpImagePipe } from './pipes/sharp-image.pipe';
+import { Auth } from '../auth/decorators';
+import { Role } from '../auth/interfaces/auth.interfaces';
 
 @Controller('files')
 export class FilesController {
     constructor(private readonly filesService: FilesService) {}
 
     @Post('product')
+    @Auth(Role.USER)
     @UseInterceptors(FilesInterceptor('files', 3))
     uploadTempProductImage(
         @UploadedFiles(
@@ -35,10 +36,5 @@ export class FilesController {
         @Res({ passthrough: true }) response: Response,
     ) {
         return this.filesService.uploadTempFiles(files, response);
-    }
-
-    @Delete('product')
-    deleteFiles(@Body() body: { keys: string[] }) {
-        return this.filesService.deleteFiles(body.keys);
     }
 }

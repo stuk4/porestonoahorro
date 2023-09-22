@@ -13,12 +13,15 @@ import { TagsService } from './tags.service';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { PaginationDto } from '../common/dtos/pagination.dto';
+import { Auth } from '../auth/decorators';
+import { Role } from '../auth/interfaces/auth.interfaces';
 
 @Controller('tags')
 export class TagsController {
     constructor(private readonly tagsService: TagsService) {}
 
     @Post()
+    @Auth(Role.USER)
     create(@Body() createTagDto: CreateTagDto) {
         return this.tagsService.create(createTagDto);
     }
@@ -28,12 +31,14 @@ export class TagsController {
         return this.tagsService.findAll(paginationDto);
     }
 
-    @Get(':id')
-    findOne(@Param('id', ParseUUIDPipe) uuid: string) {
+    @Get(':uuid')
+    @Auth(Role.ADMIN)
+    findOne(@Param('uuid', ParseUUIDPipe) uuid: string) {
         return this.tagsService.findOne(uuid);
     }
 
     @Patch(':uuid')
+    @Auth(Role.ADMIN)
     update(
         @Param('uuid', ParseUUIDPipe) uuid: string,
         @Body() updateTagDto: UpdateTagDto,
@@ -42,6 +47,7 @@ export class TagsController {
     }
 
     @Delete(':uuid')
+    @Auth(Role.ADMIN)
     remove(@Param('uuid', ParseUUIDPipe) uuid: string) {
         return this.tagsService.remove(uuid);
     }

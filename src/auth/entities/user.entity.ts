@@ -3,9 +3,12 @@ import {
     BeforeUpdate,
     Column,
     Entity,
+    JoinColumn,
+    OneToOne,
     PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Role } from '../interfaces/auth.interfaces';
+import { Profile } from './profile.entity';
 
 @Entity()
 export class User {
@@ -33,6 +36,14 @@ export class User {
         default: [Role.USER],
     })
     roles: Role[];
+
+    @OneToOne(() => Profile, (profile) => profile.user, {
+        cascade: true,
+        nullable: true,
+        eager: true,
+    })
+    @JoinColumn({ name: 'profile_uuid' })
+    profile: Profile;
 
     @BeforeInsert()
     checkFieldsBeforeInsert() {

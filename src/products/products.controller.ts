@@ -13,12 +13,15 @@ import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PaginationDto } from '../common/dtos/pagination.dto';
+import { Auth } from '../auth/decorators';
+import { Role } from '../auth/interfaces/auth.interfaces';
 
 @Controller('products')
 export class ProductsController {
     constructor(private readonly productsService: ProductsService) {}
 
     @Post()
+    @Auth(Role.USER)
     create(@Body() createProductDto: CreateProductDto) {
         return this.productsService.create(createProductDto);
     }
@@ -34,6 +37,7 @@ export class ProductsController {
     }
 
     @Patch(':uuid')
+    @Auth(Role.ADMIN)
     update(
         @Param('uuid', ParseUUIDPipe) uuid: string,
         @Body() updateProductDto: UpdateProductDto,
@@ -42,6 +46,7 @@ export class ProductsController {
     }
 
     @Delete(':uuid')
+    @Auth(Role.ADMIN)
     remove(@Param('uuid', ParseUUIDPipe) uuid: string) {
         return this.productsService.remove(uuid);
     }
