@@ -31,12 +31,13 @@ export class FilesService {
     async uploadTempFiles(
         files: Array<Express.Multer.File>,
         response: Response,
+        folder: string,
     ): Promise<string[]> {
         try {
             const uuidFile = uuid();
             const keys: string[] = files.map(
                 (file) =>
-                    `temp/product/${uuidFile}/${file.originalname.replace(
+                    `temp/${folder}/${uuidFile}/${file.originalname.replace(
                         /\s+/g,
                         '',
                     )}`,
@@ -60,9 +61,12 @@ export class FilesService {
 
             for (let i = 0; i < results.length; i++) {
                 if (results[i].status === 'rejected') {
+                    const rejectedResult = results[i] as PromiseRejectedResult;
+
                     this.logger.error(
                         `Error uploading file ${files[i].originalname}`,
                     );
+                    this.logger.error('Reason: ', rejectedResult.reason);
                     anyFailed = true;
                 } else {
                     successfulKeys.push(keys[i]);
@@ -160,26 +164,6 @@ export class FilesService {
             (key) => `${this.configService.get('CDN_URL')}/${key}`,
         );
     }
-    async deleteFiles(keys: string[]): Promise<void> {
-        const deletePromises = keys.map((key) => {
-            return this.s3Client
-                .send(
-                    new DeleteObjectCommand({
-                        Bucket: this.s3BucketName,
-                        Key: getPathOrOriginal(key),
-                    }),
-                )
-                .then(() => {
-                    this.logger.log(`File ${key} deleted successfully.`);
-                })
-                .catch((error) => {
-                    this.logger.error(
-                        `Error deleting file ${key}: ${error.message}`,
-                    );
-                });
-        });
-        await Promise.allSettled(deletePromises);
-    }
 
     private async generateThmbnail(key: string): Promise<string> {
         try {
@@ -229,5 +213,25 @@ export class FilesService {
             this.logger.error(err);
             throw new InternalServerErrorException('Error creating thumbnail.');
         }
+    }
+    async deleteFiles(keys: string[]): Promise<void> {
+        const deletePromises = keys.map((key) => {
+            return this.s3Client
+                .send(
+                    new DeleteObjectCommand({
+                        Bucket: this.s3BucketName,
+                        Key: getPathOrOriginal(key),
+                    }),
+                )
+                .then(() => {
+                    this.logger.log(`File ${key} deleted successfully.`);
+                })
+                .catch((error) => {
+                    this.logger.error(
+                        `Error deleting file ${key}: ${error.message}`,
+                    );
+                });
+        });
+        await Promise.allSettled(deletePromises);
     }
 }

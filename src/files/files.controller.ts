@@ -35,6 +35,26 @@ export class FilesController {
         files: Array<Express.Multer.File>,
         @Res({ passthrough: true }) response: Response,
     ) {
-        return this.filesService.uploadTempFiles(files, response);
+        console.log(response.req.url);
+        return this.filesService.uploadTempFiles(files, response, 'product');
+    }
+    @Post('user')
+    @Auth(Role.USER)
+    @UseInterceptors(FilesInterceptor('files', 3))
+    uploadTempUserImage(
+        @UploadedFiles(
+            new ParseFilePipe({
+                validators: [
+                    new FileTypeValidator({ fileType: '.(png|jpeg|jpg|gif)' }),
+                    new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 4 }),
+                ],
+            }),
+            SharpImagePipe,
+        )
+        files: Array<Express.Multer.File>,
+        @Res({ passthrough: true }) response: Response,
+    ) {
+        console.log(response.req.url);
+        return this.filesService.uploadTempFiles(files, response, 'user');
     }
 }

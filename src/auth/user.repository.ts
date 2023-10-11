@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CreateUserDto } from './dto';
 
 @Injectable()
 export class UserRepository extends Repository<User> {
@@ -18,4 +19,15 @@ export class UserRepository extends Repository<User> {
         );
     }
     // TODO: CREAR usuario con perfil e imagenes
+    async createUserWithProfile(
+        userDetails: CreateUserDto,
+        imagesCdn: string[],
+    ): Promise<User> {
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+        try {
+            return;
+        } catch (error) {}
+    }
 }
