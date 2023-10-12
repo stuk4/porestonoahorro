@@ -90,7 +90,13 @@ export class FilesService {
         }
     }
 
-    async moveToPermanentLocations(tempKeys: string[]): Promise<string[]> {
+    async moveToPermanentLocations({
+        tempKeys,
+        sizeThumbnail,
+    }: {
+        tempKeys: string[];
+        sizeThumbnail: number;
+    }): Promise<string[]> {
         if (tempKeys && tempKeys.length === 0) return [];
 
         const movePromises = tempKeys.map((tempKey) => {
@@ -116,7 +122,10 @@ export class FilesService {
                     throw tempKey; // Lanzamos el tempKey como error para recogerlo después
                 });
         });
-        const thumbnailImage = this.generateThmbnail(tempKeys[0]);
+        const thumbnailImage = this.generateThmbnail(
+            tempKeys[0],
+            sizeThumbnail,
+        );
         const results = await Promise.allSettled([
             thumbnailImage,
             ...movePromises,
@@ -165,7 +174,7 @@ export class FilesService {
         );
     }
 
-    private async generateThmbnail(key: string): Promise<string> {
+    private async generateThmbnail(key: string, size): Promise<string> {
         try {
             const { Body, ContentType } = await this.s3Client.send(
                 new GetObjectCommand({
@@ -180,7 +189,10 @@ export class FilesService {
                 .replace(filename, `thumbnail/image.webp`);
             if (Body) {
                 const byteArray = await Body.transformToByteArray();
-                const thumbnailBuffer = await createThumbnailSize(byteArray);
+                const thumbnailBuffer = await createThumbnailSize(
+                    byteArray,
+                    size,
+                );
 
                 const uploaded = this.s3Client
                     .send(

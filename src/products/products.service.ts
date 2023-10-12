@@ -28,8 +28,10 @@ export class ProductsService {
         let imagesCdn = [];
         try {
             if (images.length > 0) {
-                imagesCdn =
-                    await this.filesService.moveToPermanentLocations(images);
+                imagesCdn = await this.filesService.moveToPermanentLocations({
+                    tempKeys: images,
+                    sizeThumbnail: 300,
+                });
             }
             const product =
                 await this.productRepository.createProductWithImages(
@@ -92,8 +94,10 @@ export class ProductsService {
 
         let imagesCdn: string[] = [];
         try {
-            imagesCdn =
-                await this.filesService.moveToPermanentLocations(images);
+            imagesCdn = await this.filesService.moveToPermanentLocations({
+                tempKeys: images,
+                sizeThumbnail: 300,
+            });
 
             const updatedProduct =
                 await this.productRepository.updateProductWithImages(
@@ -103,7 +107,7 @@ export class ProductsService {
                 );
             if (!updatedProduct)
                 throw new NotFoundException(`Product #${uuid} not found`);
-            // const updatedProductImages = updatedProduct.images
+
             return {
                 ...updatedProduct,
                 images:

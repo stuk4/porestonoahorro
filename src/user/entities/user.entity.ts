@@ -7,8 +7,9 @@ import {
     OneToOne,
     PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Role } from '../interfaces/auth.interfaces';
+
 import { Profile } from './profile.entity';
+import { Role } from '../../auth/interfaces/auth.interfaces';
 
 @Entity()
 export class User {

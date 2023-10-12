@@ -1,10 +1,13 @@
 import * as sharp from 'sharp';
 
-export const createThumbnailSize = async (byteArray: Uint8Array) => {
+export const createThumbnailSize = async (
+    byteArray: Uint8Array,
+    size: number,
+) => {
     try {
         const buffer = Buffer.from(byteArray);
         const bufferResized = await sharp(buffer)
-            .resize(300, 300, {
+            .resize(size, size, {
                 fit: 'cover',
                 position: 'centre',
             })

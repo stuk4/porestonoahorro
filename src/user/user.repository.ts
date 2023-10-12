@@ -18,16 +18,29 @@ export class UserRepository extends Repository<User> {
             userRepository.queryRunner,
         );
     }
-    // TODO: CREAR usuario con perfil e imagenes
-    async createUserWithProfile(
-        userDetails: CreateUserDto,
-        imagesCdn: string[],
-    ): Promise<User> {
+
+    async createUserWithProfile(userDetails: CreateUserDto): Promise<User> {
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
+
         try {
-            return;
-        } catch (error) {}
+            const user = queryRunner.manager.create(User, {
+                ...userDetails,
+                profile: {
+                    email: userDetails.email,
+                    username: userDetails.username,
+                },
+            });
+            await queryRunner.manager.save(user);
+            await queryRunner.commitTransaction();
+
+            return user;
+        } catch (error) {
+            await queryRunner.rollbackTransaction();
+            throw error;
+        } finally {
+            await queryRunner.release();
+        }
     }
 }

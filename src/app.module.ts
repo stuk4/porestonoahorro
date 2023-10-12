@@ -10,6 +10,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { TagsModule } from './tags/tags.module';
 import { ProductTagModule } from './product-tag/product-tag.module';
 import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
 
 @Module({
     imports: [
@@ -37,6 +38,7 @@ import { AuthModule } from './auth/auth.module';
         TagsModule,
         ProductTagModule,
         AuthModule,
+        UserModule,
     ],
     controllers: [],
     providers: [],

@@ -6,33 +6,33 @@ import {
     NotFoundException,
     UnauthorizedException,
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
 
 import { JwtService } from '@nestjs/jwt';
-import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-import { User } from './entities/user.entity';
-import { LoginUserDto, CreateUserDto } from './dto';
+import { LoginUserDto } from './dto';
 import { JwtPayload } from './interfaces/jwt-payload.interfaces';
+import { UserService } from '../user/user.service';
+import { CreateUserDto } from '../user/dto';
+import { UserRepository } from '../user/user.repository';
+
 @Injectable()
 export class AuthService {
     private readonly logger = new Logger();
     constructor(
-        @InjectRepository(User)
-        private readonly userRepository: Repository<User>,
-
+        private readonly userService: UserService,
+        private readonly userRepository: UserRepository,
         private readonly jwtService: JwtService,
     ) {}
 
-    async create(createUserDto: CreateUserDto) {
+    async register(createUserDto: CreateUserDto) {
         try {
             const { password, ...userData } = createUserDto;
 
-            const user = this.userRepository.create({
+            const user = await this.userService.create({
                 ...userData,
                 password: bcrypt.hashSync(password, 10),
             });
-            await this.userRepository.save(user);
+
             const token = this.getJwtToken({ uuid: user.uuid });
 
             return {
@@ -81,7 +81,7 @@ export class AuthService {
         if (error instanceof UnauthorizedException) {
             throw error;
         }
-        // Si el error es una NotFoundException, simplemente lo relanzamos
+        // Si el error es una NotFoundException, simplemente lo relanzamos para menejarlo en de manera mas controlada
         if (error instanceof NotFoundException) {
             throw error;
         }
@@ -89,6 +89,6 @@ export class AuthService {
         if (error.code === '23505') throw new ConflictException(error.detail);
         this.logger.error(error);
 
-        throw new InternalServerErrorException(`Error on ${errorType} user`);
+        throw new InternalServerErrorException(`Error on ${errorType} auth`);
     }
 }
