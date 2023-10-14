@@ -97,6 +97,7 @@ export class ProductRepository extends Repository<Product> {
             // Se actualizan tags al producto
             product.tags = tags;
 
+            // Se actualizan las imágenes del producto
             if (imagesCdn && imagesCdn.length > 0) {
                 if (images && images.length > 0) {
                     await queryRunner.manager.delete(ProductImage, {

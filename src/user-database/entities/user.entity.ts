@@ -2,10 +2,12 @@ import {
     BeforeInsert,
     BeforeUpdate,
     Column,
+    CreateDateColumn,
     Entity,
     JoinColumn,
     OneToOne,
     PrimaryGeneratedColumn,
+    UpdateDateColumn,
 } from 'typeorm';
 
 import { Profile } from './profile.entity';
@@ -28,6 +30,12 @@ export class User {
     @Column({ nullable: false })
     full_name: string;
 
+    @Column({ nullable: true })
+    birth_date: Date;
+
+    @Column({ nullable: true })
+    ip_address: string;
+
     @Column('bool', { nullable: false, default: true })
     is_active: boolean;
 
@@ -37,6 +45,20 @@ export class User {
         default: [Role.USER],
     })
     roles: Role[];
+
+    @Column('text')
+    @CreateDateColumn({
+        type: 'timestamp',
+        default: () => 'CURRENT_TIMESTAMP(6)',
+    })
+    created_at: Date;
+
+    @UpdateDateColumn({
+        type: 'timestamp',
+        default: () => 'CURRENT_TIMESTAMP(6)',
+        onUpdate: 'CURRENT_TIMESTAMP(6)',
+    })
+    updated_at: Date;
 
     @OneToOne(() => Profile, (profile) => profile.user, {
         cascade: true,

@@ -11,6 +11,7 @@ import { TagsModule } from './tags/tags.module';
 import { ProductTagModule } from './product-tag/product-tag.module';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
+import { UserDatabaseModule } from './user-database/user-database.module';
 
 @Module({
     imports: [
@@ -39,6 +40,7 @@ import { UserModule } from './user/user.module';
         ProductTagModule,
         AuthModule,
         UserModule,
+        UserDatabaseModule,
     ],
     controllers: [],
     providers: [],

@@ -9,13 +9,13 @@ import {
     Injectable,
     UnauthorizedException,
 } from '@nestjs/common';
-import { User } from '../../user/entities/user.entity';
-import { UserRepository } from '../../user/user.repository';
+import { User } from '../../user-database/entities/user.entity';
+import { UserDatabaseRepository } from '../../user-database/user-database.repository';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
     constructor(
-        private readonly userRepository: UserRepository,
+        private readonly userRepository: UserDatabaseRepository,
 
         configService: ConfigService,
     ) {

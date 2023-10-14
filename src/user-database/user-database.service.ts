@@ -7,13 +7,14 @@ import {
     UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { UserRepository } from './user.repository';
+import { UserDatabaseRepository } from './user-database.repository';
+
+// import { UpdateProfileDto } from './dto/update-user-proifle.dto';
 
 @Injectable()
-export class UserService {
+export class UserDatabaseService {
     private readonly logger = new Logger();
-    constructor(private readonly userRepository: UserRepository) {}
+    constructor(private readonly userRepository: UserDatabaseRepository) {}
     async create(createUserDto: CreateUserDto) {
         try {
             const user =
@@ -33,13 +34,14 @@ export class UserService {
         return `This action returns a #${id} user`;
     }
 
-    update(id: number, updateUserDto: UpdateUserDto) {
-        return `This action updates a #${id} user`;
-    }
+    // updateWithProfile(uuid: string, updateProfileDto: UpdateProfileDto) {
+    //     return `This action updates a #${uuid} user`;
+    // }
 
     remove(id: number) {
         return `This action removes a #${id} user`;
     }
+
     private handleDBExceptions(
         error: any,
         errorType: 'create' | 'update' | 'delete' | 'find' | 'login',

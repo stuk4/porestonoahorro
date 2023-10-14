@@ -14,6 +14,7 @@ import { ProductRepository } from './products.repository';
 import { PaginationDto } from '../common/dtos/pagination.dto';
 import { FilesService } from '../files/files.service';
 import { Status } from '../common/interfaces/common.interfaces';
+import { Response } from 'express';
 
 @Injectable()
 export class ProductsService {
@@ -150,5 +151,12 @@ export class ProductsService {
         this.logger.error(error);
 
         throw new InternalServerErrorException(`Error on ${errorType} product`);
+    }
+
+    async uploadTempProductImages(
+        files: Array<Express.Multer.File>,
+        response: Response,
+    ) {
+        return this.filesService.uploadTempFiles(files, response, 'product');
     }
 }

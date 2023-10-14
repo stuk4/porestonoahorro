@@ -11,16 +11,16 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from './dto';
 import { JwtPayload } from './interfaces/jwt-payload.interfaces';
-import { UserService } from '../user/user.service';
-import { CreateUserDto } from '../user/dto';
-import { UserRepository } from '../user/user.repository';
+import { UserDatabaseService } from '../user-database/user-database.service';
+import { CreateUserDto } from '../user-database/dto';
+import { UserDatabaseRepository } from '../user-database/user-database.repository';
 
 @Injectable()
 export class AuthService {
     private readonly logger = new Logger();
     constructor(
-        private readonly userService: UserService,
-        private readonly userRepository: UserRepository,
+        private readonly userDatabaseService: UserDatabaseService,
+        private readonly userRepository: UserDatabaseRepository,
         private readonly jwtService: JwtService,
     ) {}
 
@@ -28,7 +28,7 @@ export class AuthService {
         try {
             const { password, ...userData } = createUserDto;
 
-            const user = await this.userService.create({
+            const user = await this.userDatabaseService.create({
                 ...userData,
                 password: bcrypt.hashSync(password, 10),
             });

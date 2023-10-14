@@ -7,15 +7,15 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
-import { UserModule } from '../user/user.module';
-import { UserRepository } from '../user/user.repository';
+import { UserDatabaseRepository } from '../user-database/user-database.repository';
+import { UserDatabaseModule } from '../user-database/user-database.module';
 
 @Module({
     controllers: [AuthController],
-    providers: [AuthService, JwtStrategy, UserRepository],
+    providers: [AuthService, JwtStrategy, UserDatabaseRepository],
     imports: [
         ConfigModule,
-        UserModule,
+        UserDatabaseModule,
         PassportModule.register({ defaultStrategy: 'jwt' }),
 
         JwtModule.registerAsync({
