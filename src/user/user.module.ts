@@ -6,7 +6,7 @@ import { UserDatabaseRepository } from '../user-database/user-database.repositor
 import { FilesModule } from '../files/files.module';
 import { AuthModule } from '../auth/auth.module';
 import { UserDatabaseModule } from '../user-database/user-database.module';
-import { UserService } from './user.services';
+import { UserService } from './user.service';
 
 @Module({
     controllers: [UserController],

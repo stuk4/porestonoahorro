@@ -11,7 +11,6 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from './dto';
 import { JwtPayload } from './interfaces/jwt-payload.interfaces';
-import { UserDatabaseService } from '../user-database/user-database.service';
 import { CreateUserDto } from '../user-database/dto';
 import { UserDatabaseRepository } from '../user-database/user-database.repository';
 
@@ -19,7 +18,6 @@ import { UserDatabaseRepository } from '../user-database/user-database.repositor
 export class AuthService {
     private readonly logger = new Logger();
     constructor(
-        private readonly userDatabaseService: UserDatabaseService,
         private readonly userRepository: UserDatabaseRepository,
         private readonly jwtService: JwtService,
     ) {}
@@ -27,8 +25,7 @@ export class AuthService {
     async register(createUserDto: CreateUserDto) {
         try {
             const { password, ...userData } = createUserDto;
-
-            const user = await this.userDatabaseService.create({
+            const user = await this.userRepository.createUserWithProfile({
                 ...userData,
                 password: bcrypt.hashSync(password, 10),
             });

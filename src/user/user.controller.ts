@@ -17,7 +17,7 @@ import { Role } from '../auth/interfaces/auth.interfaces';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { SharpImagePipe } from '../files/pipes/sharp-image.pipe';
 import { Response } from 'express';
-import { UserService } from './user.services';
+import { UserService } from './user.service';
 // import { UpdateProfileDto } from '../user-database/dto/update-user-proifle.dto';
 
 @Controller('user')

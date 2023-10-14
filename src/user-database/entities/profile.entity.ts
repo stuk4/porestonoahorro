@@ -28,7 +28,7 @@ export class Profile {
     gender: string;
 
     @Column('text', { nullable: true })
-    website;
+    website: string;
 
     @Column('text', { nullable: true })
     facebook_profile: string;
@@ -37,7 +37,7 @@ export class Profile {
     instagram_profile: string;
 
     @Column('text', { nullable: true })
-    x_profile;
+    x_profile: string;
 
     @Column('text', { nullable: true })
     tiktok_profile: string;

@@ -3,7 +3,7 @@ import { DataSource, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto';
-import { UpdateProfileDto } from './dto/update-user-proifle.dto';
+import { UpdateUserDto } from './dto/update-user-proifle.dto';
 
 @Injectable()
 export class UserDatabaseRepository extends Repository<User> {
@@ -46,7 +46,7 @@ export class UserDatabaseRepository extends Repository<User> {
 
     async updateUserWithProfile(
         uuidUser: string,
-        userDetails: UpdateProfileDto,
+        userDetails: UpdateUserDto,
     ): Promise<User> {
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
