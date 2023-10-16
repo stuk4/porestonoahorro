@@ -1,6 +1,6 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateUserDto } from './create-user.dto';
-import { IsEnum, IsOptional, IsString, IsUrl } from 'class-validator';
+import { IsArray, IsEnum, IsOptional, IsString, IsUrl } from 'class-validator';
 import { Gender } from '../interfaces/user-databse.interfaces';
 export class UpdateUserDto extends PartialType(CreateUserDto) {
     @IsEnum(Gender)
@@ -31,7 +31,8 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
     @IsOptional()
     location?: string;
 
-    @IsString()
+    @IsString({ each: true })
     @IsOptional()
+    @IsArray()
     images?: string[];
 }

@@ -46,7 +46,7 @@ export class ProductsController {
     }
 
     @Patch(':uuid')
-    @Auth(Role.ADMIN)
+    @Auth(Role.USER)
     update(
         @Param('uuid', ParseUUIDPipe) uuid: string,
         @Body() updateProductDto: UpdateProductDto,

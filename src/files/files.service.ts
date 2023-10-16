@@ -95,7 +95,7 @@ export class FilesService {
         sizeThumbnail,
     }: {
         tempKeys: string[];
-        sizeThumbnail: number;
+        sizeThumbnail?: number;
     }): Promise<string[]> {
         if (tempKeys && tempKeys.length === 0) return [];
 
@@ -122,14 +122,17 @@ export class FilesService {
                     throw tempKey; // Lanzamos el tempKey como error para recogerlo después
                 });
         });
-        const thumbnailImage = this.generateThmbnail(
-            tempKeys[0],
-            sizeThumbnail,
-        );
-        const results = await Promise.allSettled([
-            thumbnailImage,
-            ...movePromises,
-        ]);
+        let thumbnailImage; // Define la variable fuera del ámbito del 'if'
+
+        if (sizeThumbnail) {
+            thumbnailImage = this.generateThmbnail(tempKeys[0], sizeThumbnail);
+        }
+
+        const promisesToSettle: Promise<string>[] = thumbnailImage
+            ? [thumbnailImage, ...movePromises]
+            : [...movePromises];
+
+        const results = await Promise.allSettled(promisesToSettle);
 
         const permanentKeys: string[] = [];
         const failedKeys: string[] = [];

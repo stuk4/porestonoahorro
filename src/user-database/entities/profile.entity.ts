@@ -22,10 +22,9 @@ export class Profile {
 
     @Column('enum', {
         enum: Gender,
-        array: true,
         nullable: true,
     })
-    gender: string;
+    gender: Gender;
 
     @Column('text', { nullable: true })
     website: string;

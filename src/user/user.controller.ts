@@ -10,14 +10,19 @@ import {
     FileTypeValidator,
     MaxFileSizeValidator,
     Res,
+    Patch,
+    Body,
 } from '@nestjs/common';
 
-import { Auth } from '../auth/decorators';
+import { Auth, GetUser } from '../auth/decorators';
 import { Role } from '../auth/interfaces/auth.interfaces';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { SharpImagePipe } from '../files/pipes/sharp-image.pipe';
 import { Response } from 'express';
 import { UserService } from './user.service';
+
+import { User } from '../user-database/entities/user.entity';
+import { UpdateUserDto } from '../user-database/dto/update-user-proifle.dto';
 // import { UpdateProfileDto } from '../user-database/dto/update-user-proifle.dto';
 
 @Controller('user')
@@ -41,6 +46,15 @@ export class UserController {
         @Res({ passthrough: true }) response: Response,
     ) {
         return this.userService.uploadTempUserImage(files, response);
+    }
+
+    @Patch()
+    @Auth(Role.USER)
+    updateCurrentUser(
+        @Body() updateUserDto: UpdateUserDto,
+        @GetUser() user: User,
+    ) {
+        return this.userService.update(user.uuid, updateUserDto);
     }
 
     @Get()

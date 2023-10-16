@@ -91,14 +91,16 @@ export class ProductsService {
         return { ...rest, images: images.map(({ url }) => url) };
     }
     async update(uuid: string, updateProductDto: UpdateProductDto) {
-        const { images, ...toUpdate } = updateProductDto;
+        const { images = [], ...toUpdate } = updateProductDto;
 
         let imagesCdn: string[] = [];
         try {
-            imagesCdn = await this.filesService.moveToPermanentLocations({
-                tempKeys: images,
-                sizeThumbnail: 300,
-            });
+            if (images.length > 0) {
+                imagesCdn = await this.filesService.moveToPermanentLocations({
+                    tempKeys: images,
+                    sizeThumbnail: 300,
+                });
+            }
 
             const updatedProduct =
                 await this.productRepository.updateProductWithImages(
