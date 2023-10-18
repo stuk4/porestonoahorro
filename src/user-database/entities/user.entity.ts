@@ -50,15 +50,17 @@ export class User {
     @CreateDateColumn({
         type: 'timestamp',
         default: () => 'CURRENT_TIMESTAMP(6)',
+        name: 'created_at',
     })
-    created_at: Date;
+    createdAt: Date;
 
     @UpdateDateColumn({
         type: 'timestamp',
         default: () => 'CURRENT_TIMESTAMP(6)',
         onUpdate: 'CURRENT_TIMESTAMP(6)',
+        name: 'updated_at',
     })
-    updated_at: Date;
+    updatedAt: Date;
 
     @OneToOne(() => Profile, (profile) => profile.user, {
         cascade: true,

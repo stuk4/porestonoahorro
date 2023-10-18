@@ -19,11 +19,12 @@ import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PaginationDto } from '../common/dtos/pagination.dto';
-import { Auth } from '../auth/decorators';
+import { Auth, GetUser } from '../auth/decorators';
 import { Role } from '../auth/interfaces/auth.interfaces';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { SharpImagePipe } from '../files/pipes/sharp-image.pipe';
 import { Response } from 'express';
+import { User } from '../user-database/entities/user.entity';
 
 @Controller('products')
 export class ProductsController {
@@ -31,8 +32,8 @@ export class ProductsController {
 
     @Post()
     @Auth(Role.USER)
-    create(@Body() createProductDto: CreateProductDto) {
-        return this.productsService.create(createProductDto);
+    create(@Body() createProductDto: CreateProductDto, @GetUser() user: User) {
+        return this.productsService.create(createProductDto, user.profile);
     }
 
     @Get()
@@ -50,8 +51,13 @@ export class ProductsController {
     update(
         @Param('uuid', ParseUUIDPipe) uuid: string,
         @Body() updateProductDto: UpdateProductDto,
+        @GetUser() user: User,
     ) {
-        return this.productsService.update(uuid, updateProductDto);
+        return this.productsService.update(
+            uuid,
+            updateProductDto,
+            user.profile,
+        );
     }
 
     @Post('files')

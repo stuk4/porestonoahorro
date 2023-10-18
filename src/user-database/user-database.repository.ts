@@ -88,9 +88,9 @@ export class UserDatabaseRepository extends Repository<User> {
 
             // Si se proporcionan imágenes, actualiza las URLs de las imágenes del perfil
             if (userDetails.images && userDetails.images.length > 0) {
-                user.profile.thumbnail_url = userDetails.images[0];
+                user.profile.thumbnailUrl = userDetails.images[0];
                 if (userDetails.images.length > 1) {
-                    user.profile.picture_url = userDetails.images[1];
+                    user.profile.pictureUrl = userDetails.images[1];
                 }
             }
 

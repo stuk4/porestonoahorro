@@ -4,11 +4,15 @@ import { Tag } from '../../tags/entities/tag.entity';
 
 @Entity('product_tag')
 export class ProductTag {
-    @PrimaryColumn()
-    product_uuid: string;
+    @PrimaryColumn({
+        name: 'product_uuid',
+    })
+    productUuid: string;
 
-    @PrimaryColumn()
-    tag_uuid: string;
+    @PrimaryColumn({
+        name: 'tag_uuid',
+    })
+    tagUuid: string;
 
     @ManyToOne(() => Product, (product) => product.tags, {
         onDelete: 'NO ACTION',

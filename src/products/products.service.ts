@@ -16,6 +16,8 @@ import { FilesService } from '../files/files.service';
 import { Status } from '../common/interfaces/common.interfaces';
 import { Response } from 'express';
 
+import { Profile } from '../user-database/entities/profile.entity';
+
 @Injectable()
 export class ProductsService {
     private readonly logger = new Logger();
@@ -24,7 +26,7 @@ export class ProductsService {
         private readonly filesService: FilesService,
     ) {}
 
-    async create(createProductDto: CreateProductDto) {
+    async create(createProductDto: CreateProductDto, userProfile: Profile) {
         const { images = [], ...productDetails } = createProductDto;
         let imagesCdn = [];
         try {
@@ -38,6 +40,7 @@ export class ProductsService {
                 await this.productRepository.createProductWithImages(
                     productDetails,
                     imagesCdn,
+                    userProfile,
                 );
 
             return {
@@ -90,7 +93,11 @@ export class ProductsService {
         const { images = [], ...rest } = product;
         return { ...rest, images: images.map(({ url }) => url) };
     }
-    async update(uuid: string, updateProductDto: UpdateProductDto) {
+    async update(
+        uuid: string,
+        updateProductDto: UpdateProductDto,
+        userProfile: Profile,
+    ) {
         const { images = [], ...toUpdate } = updateProductDto;
 
         let imagesCdn: string[] = [];
@@ -107,6 +114,7 @@ export class ProductsService {
                     uuid,
                     { ...toUpdate, images },
                     imagesCdn,
+                    userProfile,
                 );
             if (!updatedProduct)
                 throw new NotFoundException(`Product #${uuid} not found`);

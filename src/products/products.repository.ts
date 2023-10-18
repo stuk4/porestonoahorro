@@ -8,6 +8,8 @@ import { Status } from '../common/interfaces/common.interfaces';
 import { CreateProductDto } from './dto/create-product.dto';
 import { Tag } from '../tags/entities/tag.entity';
 
+import { Profile } from '../user-database/entities/profile.entity';
+
 @Injectable()
 export class ProductRepository extends Repository<Product> {
     private readonly logger = new Logger();
@@ -26,6 +28,7 @@ export class ProductRepository extends Repository<Product> {
     async createProductWithImages(
         productDetails: CreateProductDto,
         imagesCdn: string[],
+        userProfile: Profile,
     ): Promise<Product> {
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
@@ -41,7 +44,8 @@ export class ProductRepository extends Repository<Product> {
             const product = queryRunner.manager.create(Product, {
                 ...productDetail,
                 status: Status.PUBLISHED,
-                thumbnail_url: imagesCdn[0],
+                thumbnailUrl: imagesCdn[0],
+                userProfile,
                 images: imagesCdn.map((image) => {
                     const productImage = queryRunner.manager.create(
                         ProductImage,
@@ -70,6 +74,7 @@ export class ProductRepository extends Repository<Product> {
         uuid: string,
         toUpdate: UpdateProductDto,
         imagesCdn: string[],
+        userProfile: Profile,
     ): Promise<Product | null> {
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
@@ -105,13 +110,13 @@ export class ProductRepository extends Repository<Product> {
                     });
                 }
 
-                product.thumbnail_url = imagesCdn[0];
+                product.thumbnailUrl = imagesCdn[0];
 
                 product.images = imagesCdn.map((image) =>
                     this.manager.create(ProductImage, { url: image }),
                 );
             }
-
+            product.userProfile = userProfile;
             await queryRunner.manager.save(product);
             await queryRunner.commitTransaction();
 

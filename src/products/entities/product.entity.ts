@@ -4,8 +4,10 @@ import {
     Column,
     CreateDateColumn,
     Entity,
+    JoinColumn,
     JoinTable,
     ManyToMany,
+    ManyToOne,
     OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
@@ -14,6 +16,7 @@ import { slugify } from '../../common/utils/slugify';
 import { ProductImage } from './product-image.entity';
 import { Status } from '../../common/interfaces/common.interfaces';
 import { Tag } from '../../tags/entities/tag.entity';
+import { Profile } from '../../user-database/entities/profile.entity';
 
 @Entity()
 export class Product {
@@ -51,23 +54,30 @@ export class Product {
     status: Status;
 
     @Column('text', {
+        name: 'thumbnail_url',
         nullable: false,
     })
-    thumbnail_url: string;
+    thumbnailUrl: string;
 
     @Column('text')
     @CreateDateColumn({
         type: 'timestamp',
         default: () => 'CURRENT_TIMESTAMP(6)',
+        name: 'created_at',
     })
-    created_at: Date;
+    createdAt: Date;
 
     @UpdateDateColumn({
         type: 'timestamp',
         default: () => 'CURRENT_TIMESTAMP(6)',
         onUpdate: 'CURRENT_TIMESTAMP(6)',
+        name: 'updated_at',
     })
-    updated_at: Date;
+    updatedAt: Date;
+
+    @ManyToOne(() => Profile, (profile) => profile.product, { eager: true })
+    @JoinColumn({ name: 'user_profile_uuid' })
+    userProfile: Profile;
 
     @OneToMany(() => ProductImage, (productImage) => productImage.product, {
         cascade: true,
@@ -75,11 +85,10 @@ export class Product {
     })
     images?: ProductImage[];
 
-    @ManyToMany(
-        () => Tag,
-        (tag) => tag.products, //optional
-        { onDelete: 'NO ACTION', onUpdate: 'NO ACTION' },
-    )
+    @ManyToMany(() => Tag, (tag) => tag.products, {
+        onDelete: 'NO ACTION',
+        onUpdate: 'NO ACTION',
+    })
     @JoinTable({
         name: 'product_tag',
         joinColumn: {

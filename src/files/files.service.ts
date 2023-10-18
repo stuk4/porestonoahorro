@@ -122,7 +122,7 @@ export class FilesService {
                     throw tempKey; // Lanzamos el tempKey como error para recogerlo después
                 });
         });
-        let thumbnailImage; // Define la variable fuera del ámbito del 'if'
+        let thumbnailImage: Promise<string>; // Define la variable fuera del ámbito del 'if'
 
         if (sizeThumbnail) {
             thumbnailImage = this.generateThmbnail(tempKeys[0], sizeThumbnail);
