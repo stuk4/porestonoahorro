@@ -13,6 +13,7 @@ import { LoginUserDto } from './dto';
 import { JwtPayload } from './interfaces/jwt-payload.interfaces';
 import { CreateUserDto } from '../user-database/dto';
 import { UserDatabaseRepository } from '../user-database/user-database.repository';
+import { User } from '../user-database/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -69,6 +70,15 @@ export class AuthService {
     private getJwtToken(payload: JwtPayload) {
         const token = this.jwtService.sign(payload);
         return token;
+    }
+
+    async checkAuthStatus(user: User) {
+        const token = this.getJwtToken({ uuid: user.uuid });
+
+        return {
+            ...user,
+            token,
+        };
     }
 
     private handleDBExceptions(
