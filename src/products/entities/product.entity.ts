@@ -17,6 +17,7 @@ import { ProductImage } from './product-image.entity';
 import { Status } from '../../common/interfaces/common.interfaces';
 import { Tag } from '../../tags/entities/tag.entity';
 import { Profile } from '../../user-database/entities/profile.entity';
+import { WishlistItem } from '../../wishlist/entities/wishlist-item';
 
 @Entity()
 export class Product {
@@ -101,6 +102,9 @@ export class Product {
         },
     })
     tags?: Tag[];
+
+    @OneToMany(() => WishlistItem, (item) => item.product)
+    wishlistItems: WishlistItem[];
 
     @BeforeInsert()
     updateSlug() {

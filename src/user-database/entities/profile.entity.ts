@@ -10,6 +10,7 @@ import {
 import { User } from './user.entity';
 import { Gender } from '../interfaces/user-databse.interfaces';
 import { Product } from '../../products/entities';
+import { Wishlist } from '../../wishlist/entities/wishlist.entity';
 
 @Entity()
 export class Profile {
@@ -73,4 +74,7 @@ export class Profile {
 
     @OneToOne(() => User, (user) => user.profile)
     user: User;
+
+    @OneToMany(() => Wishlist, (wishlist) => wishlist.profile)
+    wishlists: Wishlist[];
 }

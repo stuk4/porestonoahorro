@@ -12,6 +12,7 @@ import { ProductTagModule } from './product-tag/product-tag.module';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { UserDatabaseModule } from './user-database/user-database.module';
+import { WishlistModule } from './wishlist/wishlist.module';
 
 @Module({
     imports: [
@@ -41,6 +42,7 @@ import { UserDatabaseModule } from './user-database/user-database.module';
         AuthModule,
         UserModule,
         UserDatabaseModule,
+        WishlistModule,
     ],
     controllers: [],
     providers: [],
