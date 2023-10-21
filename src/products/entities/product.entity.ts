@@ -16,7 +16,7 @@ import { slugify } from '../../common/utils/slugify';
 import { ProductImage } from './product-image.entity';
 import { Status } from '../../common/interfaces/common.interfaces';
 import { Tag } from '../../tags/entities/tag.entity';
-import { Profile } from '../../user-database/entities/profile.entity';
+import { UserProfile } from '../../user-database/entities/user-profile.entity';
 import { WishlistItem } from '../../wishlist/entities/wishlist-item';
 
 @Entity()
@@ -76,9 +76,11 @@ export class Product {
     })
     updatedAt: Date;
 
-    @ManyToOne(() => Profile, (profile) => profile.product, { eager: true })
+    @ManyToOne(() => UserProfile, (userProfile) => userProfile.product, {
+        eager: true,
+    })
     @JoinColumn({ name: 'user_profile_uuid' })
-    userProfile: Profile;
+    userProfile: UserProfile;
 
     @OneToMany(() => ProductImage, (productImage) => productImage.product, {
         cascade: true,

@@ -8,7 +8,7 @@ import { Status } from '../common/interfaces/common.interfaces';
 import { CreateProductDto } from './dto/create-product.dto';
 import { Tag } from '../tags/entities/tag.entity';
 
-import { Profile } from '../user-database/entities/profile.entity';
+import { UserProfile } from '../user-database/entities/user-profile.entity';
 
 @Injectable()
 export class ProductRepository extends Repository<Product> {
@@ -28,7 +28,7 @@ export class ProductRepository extends Repository<Product> {
     async createProductWithImages(
         productDetails: CreateProductDto,
         imagesCdn: string[],
-        userProfile: Profile,
+        userProfile: UserProfile,
     ): Promise<Product> {
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
@@ -74,7 +74,7 @@ export class ProductRepository extends Repository<Product> {
         uuid: string,
         toUpdate: UpdateProductDto,
         imagesCdn: string[],
-        userProfile: Profile,
+        userProfile: UserProfile,
     ): Promise<Product | null> {
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();

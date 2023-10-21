@@ -33,7 +33,7 @@ export class ProductsController {
     @Post()
     @Auth(Role.USER)
     create(@Body() createProductDto: CreateProductDto, @GetUser() user: User) {
-        return this.productsService.create(createProductDto, user.profile);
+        return this.productsService.create(createProductDto, user.userProfile);
     }
 
     @Get()
@@ -56,7 +56,7 @@ export class ProductsController {
         return this.productsService.update(
             uuid,
             updateProductDto,
-            user.profile,
+            user.userProfile,
         );
     }
 

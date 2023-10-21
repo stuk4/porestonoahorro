@@ -10,14 +10,28 @@ import {
 import { WishlistService } from './wishlist.service';
 import { CreateWishlistDto } from './dto/create-wishlist.dto';
 import { UpdateWishlistDto } from './dto/update-wishlist.dto';
+import { Auth, GetUser } from '../auth/decorators';
+import { Role } from '../auth/interfaces/auth.interfaces';
+import { User } from '../user-database/entities/user.entity';
+import { CreateWishlistItemDto } from './dto/create-wishlist-item.dto';
 
 @Controller('wishlist')
 export class WishlistController {
     constructor(private readonly wishlistService: WishlistService) {}
 
     @Post()
-    create(@Body() createWishlistDto: CreateWishlistDto) {
-        return this.wishlistService.create(createWishlistDto);
+    @Auth(Role.USER)
+    create(
+        @Body() createWishlistDto: CreateWishlistDto,
+        @GetUser() user: User,
+    ) {
+        return this.wishlistService.create(createWishlistDto, user);
+    }
+
+    @Post('item')
+    @Auth(Role.USER)
+    createWishlistItem(@Body() createWishlistItemDto: CreateWishlistItemDto) {
+        return this.wishlistService.createWishlistItem(createWishlistItemDto);
     }
 
     @Get()

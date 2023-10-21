@@ -8,8 +8,9 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
-import { Profile } from '../../user-database/entities/profile.entity';
+import { UserProfile } from '../../user-database/entities/user-profile.entity';
 import { WishlistItem } from './wishlist-item';
+
 @Entity()
 export class Wishlist {
     @PrimaryGeneratedColumn('uuid')
@@ -20,9 +21,11 @@ export class Wishlist {
     })
     name: string;
 
-    @ManyToOne(() => Profile, (profile) => profile.wishlists)
+    @ManyToOne(() => UserProfile, (userProfile) => userProfile.wishlists, {
+        eager: false,
+    })
     @JoinColumn({ name: 'profile_uuid' })
-    profile: Profile;
+    userProfile: UserProfile;
 
     @OneToMany(() => WishlistItem, (item) => item.wishlist)
     items: WishlistItem[];

@@ -16,7 +16,7 @@ import { FilesService } from '../files/files.service';
 import { Status } from '../common/interfaces/common.interfaces';
 import { Response } from 'express';
 
-import { Profile } from '../user-database/entities/profile.entity';
+import { UserProfile } from '../user-database/entities/user-profile.entity';
 
 @Injectable()
 export class ProductsService {
@@ -26,7 +26,7 @@ export class ProductsService {
         private readonly filesService: FilesService,
     ) {}
 
-    async create(createProductDto: CreateProductDto, userProfile: Profile) {
+    async create(createProductDto: CreateProductDto, userProfile: UserProfile) {
         const { images = [], ...productDetails } = createProductDto;
         let imagesCdn = [];
         try {
@@ -96,7 +96,7 @@ export class ProductsService {
     async update(
         uuid: string,
         updateProductDto: UpdateProductDto,
-        userProfile: Profile,
+        userProfile: UserProfile,
     ) {
         const { images = [], ...toUpdate } = updateProductDto;
 

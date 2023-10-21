@@ -13,7 +13,7 @@ import { Product } from '../../products/entities';
 import { Wishlist } from '../../wishlist/entities/wishlist.entity';
 
 @Entity()
-export class Profile {
+export class UserProfile {
     @PrimaryGeneratedColumn('uuid')
     uuid: string;
 
@@ -72,9 +72,9 @@ export class Profile {
     })
     updatedAt: Date;
 
-    @OneToOne(() => User, (user) => user.profile)
+    @OneToOne(() => User, (user) => user.userProfile)
     user: User;
 
-    @OneToMany(() => Wishlist, (wishlist) => wishlist.profile)
+    @OneToMany(() => Wishlist, (wishlist) => wishlist.userProfile)
     wishlists: Wishlist[];
 }

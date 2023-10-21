@@ -10,7 +10,7 @@ import {
     UpdateDateColumn,
 } from 'typeorm';
 
-import { Profile } from './profile.entity';
+import { UserProfile } from './user-profile.entity';
 import { Role } from '../../auth/interfaces/auth.interfaces';
 
 @Entity()
@@ -62,13 +62,13 @@ export class User {
     })
     updatedAt: Date;
 
-    @OneToOne(() => Profile, (profile) => profile.user, {
+    @OneToOne(() => UserProfile, (userProfile) => userProfile.user, {
         cascade: true,
         nullable: true,
         eager: true,
     })
     @JoinColumn({ name: 'profile_uuid' })
-    profile: Profile;
+    userProfile: UserProfile;
 
     @BeforeInsert()
     checkFieldsBeforeInsert() {
