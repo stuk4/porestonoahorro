@@ -44,12 +44,18 @@ export class WishlistController {
         return this.wishlistService.findOne(+id);
     }
 
-    @Patch(':id')
+    @Patch(':uuid')
+    @Auth(Role.USER)
     update(
-        @Param('id') id: string,
+        @Param('uuid') uuid: string,
         @Body() updateWishlistDto: UpdateWishlistDto,
+        @GetUser() user: User,
     ) {
-        return this.wishlistService.update(+id, updateWishlistDto);
+        return this.wishlistService.update(
+            uuid,
+            updateWishlistDto,
+            user.userProfile,
+        );
     }
 
     @Delete(':id')

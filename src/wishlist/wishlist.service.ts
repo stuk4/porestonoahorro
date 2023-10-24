@@ -1,5 +1,6 @@
 import {
     ConflictException,
+    ForbiddenException,
     Injectable,
     InternalServerErrorException,
     Logger,
@@ -15,6 +16,7 @@ import { WishlistItem } from './entities/wishlist-item';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ProductRepository } from '../products/products.repository';
+import { UserProfile } from '../user-database/entities/user-profile.entity';
 
 @Injectable()
 export class WishlistService {
@@ -78,8 +80,32 @@ export class WishlistService {
         return `This action returns a #${id} wishlist`;
     }
 
-    update(id: number, updateWishlistDto: UpdateWishlistDto) {
-        return `This action updates a #${id} wishlist`;
+    async update(
+        uuid: string,
+        updateWishlistDto: UpdateWishlistDto,
+        userProfile: UserProfile,
+    ) {
+        try {
+            const wishlist = await this.wishlistRepository.findOne({
+                where: { uuid },
+                relations: ['userProfile'],
+            });
+
+            if (!wishlist) {
+                throw new NotFoundException('Wishlist not found');
+            }
+
+            if (wishlist.userProfile.uuid !== userProfile.uuid) {
+                throw new ForbiddenException(
+                    'You can only update your own wishlists',
+                );
+            }
+
+            Object.assign(wishlist, updateWishlistDto);
+            return this.wishlistRepository.save(wishlist);
+        } catch (error) {
+            this.handleDBExceptions(error, 'update');
+        }
     }
 
     remove(id: number) {
@@ -100,6 +126,8 @@ export class WishlistService {
         if (error.code === '23505') throw new ConflictException(error.detail);
         this.logger.error(error);
 
-        throw new InternalServerErrorException(`Error on ${errorType} user`);
+        throw new InternalServerErrorException(
+            `Error on ${errorType} wishlist`,
+        );
     }
 }
