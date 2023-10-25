@@ -25,7 +25,7 @@ export class WishlistController {
         @Body() createWishlistDto: CreateWishlistDto,
         @GetUser() user: User,
     ) {
-        return this.wishlistService.create(createWishlistDto, user);
+        return this.wishlistService.createWishlist(createWishlistDto, user);
     }
 
     @Post('item')
@@ -35,8 +35,11 @@ export class WishlistController {
     }
 
     @Get()
-    findAll() {
-        return this.wishlistService.findAll();
+    @Auth(Role.USER)
+    findAllWishlistByUserProfile(@GetUser() user: User) {
+        return this.wishlistService.findAllWishlistByUserProfile(
+            user.userProfile,
+        );
     }
 
     @Get(':id')

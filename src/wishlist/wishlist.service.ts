@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     ConflictException,
     ForbiddenException,
     Injectable,
@@ -17,6 +18,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ProductRepository } from '../products/products.repository';
 import { UserProfile } from '../user-database/entities/user-profile.entity';
+import { PaginationService } from '../common/services/pagination.service';
 
 @Injectable()
 export class WishlistService {
@@ -25,12 +27,24 @@ export class WishlistService {
         private readonly wishlistRepository: WishlistRepository,
         @InjectRepository(WishlistItem)
         private readonly wishlistItemRepository: Repository<WishlistItem>,
-
+        private readonly paginationService: PaginationService,
         private readonly productRepository: ProductRepository,
     ) {}
 
-    async create(createWishlistDto: CreateWishlistDto, user: User) {
+    async createWishlist(createWishlistDto: CreateWishlistDto, user: User) {
         try {
+            const wishlistCount = await this.wishlistRepository.count({
+                where: {
+                    userProfile: {
+                        uuid: user.userProfile.uuid,
+                    },
+                },
+            });
+            if (wishlistCount >= 20) {
+                throw new BadRequestException(
+                    'You can only create 20 wishlists',
+                );
+            }
             const wishlist = this.wishlistRepository.create({
                 ...createWishlistDto,
                 userProfile: user.userProfile,
@@ -72,8 +86,34 @@ export class WishlistService {
         }
     }
 
-    findAll() {
-        return `This action returns all wishlist`;
+    async findAllWishlistByUserProfile(userProfile: UserProfile) {
+        try {
+            const wishlists = await this.wishlistRepository.find({
+                where: {
+                    userProfile: {
+                        uuid: userProfile.uuid,
+                    },
+                },
+                take: 20,
+            });
+
+            for (const wishlist of wishlists) {
+                const items = await this.wishlistItemRepository.find({
+                    where: {
+                        wishlist: {
+                            uuid: wishlist.uuid,
+                        },
+                    },
+                    relations: ['product'],
+                    take: 4, //preview de 4 productos
+                });
+                wishlist.items = items;
+            }
+
+            return wishlists;
+        } catch (error) {
+            this.handleDBExceptions(error, 'find');
+        }
     }
 
     findOne(id: number) {

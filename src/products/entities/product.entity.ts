@@ -77,7 +77,7 @@ export class Product {
     updatedAt: Date;
 
     @ManyToOne(() => UserProfile, (userProfile) => userProfile.product, {
-        eager: true,
+        eager: false,
     })
     @JoinColumn({ name: 'user_profile_uuid' })
     userProfile: UserProfile;

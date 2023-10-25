@@ -12,6 +12,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PaginationDto } from '../common/dtos/pagination.dto';
 import { Status } from '../common/interfaces/common.interfaces';
+import { PaginationService } from '../common/services/pagination.service';
 
 @Injectable()
 export class TagsService {
@@ -19,6 +20,8 @@ export class TagsService {
     constructor(
         @InjectRepository(Tag)
         private readonly tagRepository: Repository<Tag>,
+
+        private readonly paginationService: PaginationService,
     ) {}
     async create(createTagDto: CreateTagDto) {
         try {
@@ -33,24 +36,13 @@ export class TagsService {
     }
 
     async findAll(paginationDto: PaginationDto) {
-        const { perPage = 10, page = 1 } = paginationDto;
-
-        const [tags, total] = await this.tagRepository.findAndCount({
-            where: { status: Status.PUBLISHED },
-            take: perPage,
-            skip: (page - 1) * perPage,
-        });
-
-        return {
-            data: tags,
-            meta: {
-                total,
-                page,
-                last_page: Math.ceil(total / perPage),
-                has_prev_page: page > 1,
-                has_next_page: page < Math.ceil(total / perPage),
+        return this.paginationService.paginate<Tag>(
+            this.tagRepository,
+            paginationDto,
+            {
+                where: { status: Status.PUBLISHED },
             },
-        };
+        );
     }
 
     async findOne(uuid: string) {

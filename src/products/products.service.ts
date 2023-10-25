@@ -17,11 +17,14 @@ import { Status } from '../common/interfaces/common.interfaces';
 import { Response } from 'express';
 
 import { UserProfile } from '../user-database/entities/user-profile.entity';
+import { PaginationService } from '../common/services/pagination.service';
+import { Product } from './entities';
 
 @Injectable()
 export class ProductsService {
     private readonly logger = new Logger();
     constructor(
+        private readonly paginationService: PaginationService,
         private readonly productRepository: ProductRepository,
         private readonly filesService: FilesService,
     ) {}
@@ -56,24 +59,14 @@ export class ProductsService {
     }
 
     async findAll(paginationDto: PaginationDto) {
-        const { perPage = 10, page = 1 } = paginationDto;
-
-        const [products, total] = await this.productRepository.findAndCount({
-            where: { status: Status.PUBLISHED },
-            take: perPage,
-            skip: (page - 1) * perPage,
-        });
-
-        return {
-            data: products,
-            meta: {
-                total,
-                page,
-                last_page: Math.ceil(total / perPage),
-                has_prev_page: page > 1,
-                has_next_page: page < Math.ceil(total / perPage),
+        return this.paginationService.paginate<Product>(
+            this.productRepository,
+            paginationDto,
+            {
+                where: { status: Status.PUBLISHED },
+                relations: ['tags', 'userProfile'],
             },
-        };
+        );
     }
 
     async findOne(term: string) {
