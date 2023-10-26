@@ -19,6 +19,7 @@ import { Repository } from 'typeorm';
 import { ProductRepository } from '../products/products.repository';
 import { UserProfile } from '../user-database/entities/user-profile.entity';
 import { PaginationService } from '../common/services/pagination.service';
+import { PaginationDto } from '../common/dtos/pagination.dto';
 
 @Injectable()
 export class WishlistService {
@@ -111,6 +112,34 @@ export class WishlistService {
             }
 
             return wishlists;
+        } catch (error) {
+            this.handleDBExceptions(error, 'find');
+        }
+    }
+
+    async findAllWishlistItemsByWishlist(
+        uuid: string,
+        paginationDto: PaginationDto,
+        userProfile: UserProfile,
+    ) {
+        try {
+            const wishlistItems =
+                await this.paginationService.paginate<WishlistItem>(
+                    this.wishlistItemRepository,
+                    paginationDto,
+                    {
+                        where: {
+                            wishlist: {
+                                uuid: uuid,
+                                userProfile: {
+                                    uuid: userProfile.uuid,
+                                },
+                            },
+                        },
+                        relations: ['product'],
+                    },
+                );
+            return wishlistItems;
         } catch (error) {
             this.handleDBExceptions(error, 'find');
         }

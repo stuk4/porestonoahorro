@@ -6,6 +6,7 @@ import {
     Patch,
     Param,
     Delete,
+    Query,
 } from '@nestjs/common';
 import { WishlistService } from './wishlist.service';
 import { CreateWishlistDto } from './dto/create-wishlist.dto';
@@ -14,6 +15,7 @@ import { Auth, GetUser } from '../auth/decorators';
 import { Role } from '../auth/interfaces/auth.interfaces';
 import { User } from '../user-database/entities/user.entity';
 import { CreateWishlistItemDto } from './dto/create-wishlist-item.dto';
+import { PaginationDto } from '../common/dtos/pagination.dto';
 
 @Controller('wishlist')
 export class WishlistController {
@@ -38,6 +40,20 @@ export class WishlistController {
     @Auth(Role.USER)
     findAllWishlistByUserProfile(@GetUser() user: User) {
         return this.wishlistService.findAllWishlistByUserProfile(
+            user.userProfile,
+        );
+    }
+
+    @Get('item/:uuid')
+    @Auth(Role.USER)
+    findAllWishlistItemsByWishlist(
+        @Param('uuid') uuid: string,
+        @Query() paginationDto: PaginationDto,
+        @GetUser() user: User,
+    ) {
+        return this.wishlistService.findAllWishlistItemsByWishlist(
+            uuid,
+            paginationDto,
             user.userProfile,
         );
     }

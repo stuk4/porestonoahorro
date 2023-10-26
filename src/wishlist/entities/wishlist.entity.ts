@@ -27,7 +27,9 @@ export class Wishlist {
     @JoinColumn({ name: 'profile_uuid' })
     userProfile: UserProfile;
 
-    @OneToMany(() => WishlistItem, (item) => item.wishlist)
+    @OneToMany(() => WishlistItem, (item) => item.wishlist, {
+        cascade: ['remove'],
+    })
     items: WishlistItem[];
 
     @CreateDateColumn({
