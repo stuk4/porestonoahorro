@@ -1,6 +1,6 @@
 import { DataSource, In, Repository } from 'typeorm';
 import { Product, ProductImage } from './entities';
-import { Injectable, Logger } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -81,12 +81,17 @@ export class ProductRepository extends Repository<Product> {
         await queryRunner.startTransaction();
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { images, tags: tagsUUIDs, ...productDetails } = toUpdate;
+        const { images, tags: tagsUUIDs = [], ...productDetails } = toUpdate;
         try {
             const product = await queryRunner.manager.findOne(Product, {
                 where: { uuid },
-                relations: ['tags', 'images'],
+                relations: ['tags', 'images', 'userProfile'],
             });
+            if (userProfile.uuid !== product.userProfile.uuid) {
+                throw new ForbiddenException(
+                    'You can only update your own products',
+                );
+            }
 
             if (!product) {
                 return null;
@@ -122,7 +127,7 @@ export class ProductRepository extends Repository<Product> {
 
             return product;
         } catch (error) {
-            this.logger.error('Error updating product', error);
+            this.logger.error('Error updating product');
             await queryRunner.rollbackTransaction();
             throw error;
         } finally {

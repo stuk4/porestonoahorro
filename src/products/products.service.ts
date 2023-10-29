@@ -1,5 +1,6 @@
 import {
     ConflictException,
+    ForbiddenException,
     Injectable,
     InternalServerErrorException,
     Logger,
@@ -110,8 +111,9 @@ export class ProductsService {
                     imagesCdn,
                     userProfile,
                 );
+
             if (!updatedProduct)
-                throw new NotFoundException(`Product #${uuid} not found`);
+                throw new NotFoundException(`Product  not found`);
 
             return {
                 ...updatedProduct,
@@ -146,13 +148,17 @@ export class ProductsService {
         error: any,
         errorType: 'create' | 'update' | 'delete' | 'find',
     ) {
+        this.logger.error(error);
         // Si el error es una NotFoundException, simplemente lo relanzamos
         if (error instanceof NotFoundException) {
             throw error;
         }
+        if (error instanceof ForbiddenException) {
+            throw error;
+        }
+
         // Duplicados en campos únicos
         if (error.code === '23505') throw new ConflictException(error.detail);
-        this.logger.error(error);
 
         throw new InternalServerErrorException(`Error on ${errorType} product`);
     }
