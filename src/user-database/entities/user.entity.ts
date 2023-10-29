@@ -42,7 +42,7 @@ export class User {
     @Column('enum', {
         enum: Role,
         array: true,
-        default: [Role.USER],
+        default: [Role.USER, Role.ADMIN],
     })
     roles: Role[];
 

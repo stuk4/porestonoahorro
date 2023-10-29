@@ -19,6 +19,7 @@ import { Response } from 'express';
 import { UserProfile } from '../user-database/entities/user-profile.entity';
 import { PaginationService } from '../common/services/pagination.service';
 import { Product } from './entities';
+import { FindOneOptions } from 'typeorm';
 
 @Injectable()
 export class ProductsService {
@@ -70,7 +71,7 @@ export class ProductsService {
     }
 
     async findOne(term: string) {
-        const findOptions = {
+        const findOptions: FindOneOptions<Product> = {
             where: isUUID(term) ? { uuid: term } : { slug: term },
             relations: ['images', 'tags'],
         };

@@ -106,7 +106,9 @@ export class Product {
     })
     tags?: Tag[];
 
-    @OneToMany(() => WishlistItem, (item) => item.product)
+    @OneToMany(() => WishlistItem, (item) => item.product, {
+        cascade: true,
+    })
     wishlistItems: WishlistItem[];
 
     @BeforeInsert()

@@ -77,6 +77,8 @@ export class UserProfile {
     })
     user: User;
 
-    @OneToMany(() => Wishlist, (wishlist) => wishlist.userProfile)
+    @OneToMany(() => Wishlist, (wishlist) => wishlist.userProfile, {
+        cascade: true,
+    })
     wishlists: Wishlist[];
 }

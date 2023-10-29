@@ -20,7 +20,9 @@ export class WishlistItem {
     @JoinColumn({ name: 'wishlist_uuid' })
     wishlist: Wishlist;
 
-    @ManyToOne(() => Product, (product) => product.wishlistItems)
+    @ManyToOne(() => Product, (product) => product.wishlistItems, {
+        onDelete: 'CASCADE',
+    })
     @JoinColumn({ name: 'product_uuid' })
     product: Product;
 

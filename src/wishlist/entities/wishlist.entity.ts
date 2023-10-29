@@ -23,6 +23,7 @@ export class Wishlist {
 
     @ManyToOne(() => UserProfile, (userProfile) => userProfile.wishlists, {
         eager: false,
+        onDelete: 'CASCADE',
     })
     @JoinColumn({ name: 'profile_uuid' })
     userProfile: UserProfile;
