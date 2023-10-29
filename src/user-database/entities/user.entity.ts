@@ -64,6 +64,7 @@ export class User {
 
     @OneToOne(() => UserProfile, (userProfile) => userProfile.user, {
         cascade: true,
+        onDelete: 'CASCADE',
         nullable: true,
         eager: true,
     })

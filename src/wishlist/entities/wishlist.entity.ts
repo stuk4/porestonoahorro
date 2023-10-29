@@ -28,7 +28,8 @@ export class Wishlist {
     userProfile: UserProfile;
 
     @OneToMany(() => WishlistItem, (item) => item.wishlist, {
-        cascade: ['remove'],
+        cascade: true,
+        onDelete: 'CASCADE',
     })
     items: WishlistItem[];
 

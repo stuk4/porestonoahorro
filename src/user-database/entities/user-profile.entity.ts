@@ -72,7 +72,9 @@ export class UserProfile {
     })
     updatedAt: Date;
 
-    @OneToOne(() => User, (user) => user.userProfile)
+    @OneToOne(() => User, (user) => user.userProfile, {
+        onDelete: 'CASCADE',
+    })
     user: User;
 
     @OneToMany(() => Wishlist, (wishlist) => wishlist.userProfile)

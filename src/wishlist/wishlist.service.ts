@@ -145,10 +145,6 @@ export class WishlistService {
         }
     }
 
-    findOne(id: number) {
-        return `This action returns a #${id} wishlist`;
-    }
-
     async update(
         uuid: string,
         updateWishlistDto: UpdateWishlistDto,
@@ -177,8 +173,46 @@ export class WishlistService {
         }
     }
 
-    remove(id: number) {
-        return `This action removes a #${id} wishlist`;
+    async removeWishlist(uuid: string, user: User) {
+        try {
+            const wishlist = await this.wishlistRepository.findOne({
+                where: { uuid },
+                relations: ['userProfile'],
+            });
+            if (!wishlist) {
+                throw new NotFoundException('Wishlist not found');
+            }
+            if (wishlist.userProfile.uuid !== user.userProfile.uuid) {
+                throw new ForbiddenException(
+                    'You can only delete your own wishlists',
+                );
+            }
+            await this.wishlistRepository.remove(wishlist);
+        } catch (error) {
+            this.handleDBExceptions(error, 'delete');
+        }
+    }
+
+    async removeWhishlistItem(uuid: string, user: User) {
+        try {
+            const wishlistItem = await this.wishlistItemRepository.findOne({
+                where: { uuid },
+                relations: ['wishlist.userProfile'],
+            });
+            if (!wishlistItem) {
+                throw new NotFoundException('Wishlist item not found');
+            }
+            if (
+                wishlistItem.wishlist.userProfile.uuid !== user.userProfile.uuid
+            ) {
+                throw new ForbiddenException(
+                    'You can only delete your own wishlists items',
+                );
+            }
+            await this.wishlistItemRepository.remove(wishlistItem);
+        } catch (error) {
+            this.handleDBExceptions(error, 'delete');
+        }
     }
     private handleDBExceptions(
         error: any,

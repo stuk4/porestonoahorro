@@ -58,11 +58,6 @@ export class WishlistController {
         );
     }
 
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.wishlistService.findOne(+id);
-    }
-
     @Patch(':uuid')
     @Auth(Role.USER)
     update(
@@ -77,8 +72,14 @@ export class WishlistController {
         );
     }
 
-    @Delete(':id')
-    remove(@Param('id') id: string) {
-        return this.wishlistService.remove(+id);
+    @Delete(':uuid')
+    @Auth(Role.USER)
+    removeWhishlist(@Param('uuid') uuid: string, @GetUser() user: User) {
+        return this.wishlistService.removeWishlist(uuid, user);
+    }
+    @Delete('item/:uuid')
+    @Auth(Role.USER)
+    removeWhishlistItem(@Param('uuid') uuid: string, @GetUser() user: User) {
+        return this.wishlistService.removeWhishlistItem(uuid, user);
     }
 }
