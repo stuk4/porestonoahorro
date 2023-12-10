@@ -44,7 +44,19 @@ export class TagsService {
             },
         );
     }
-
+    async autocompleteByName(query: string) {
+        try {
+            console.log(query);
+            return this.tagRepository
+                .createQueryBuilder('tag')
+                .where('tag.name ILIKE :name', { name: `%${query}%` })
+                .orderBy('tag.name', 'ASC')
+                .take(10)
+                .getMany();
+        } catch (error) {
+            this.handleDBExceptions(error, 'find');
+        }
+    }
     async findOne(uuid: string) {
         const tag = await this.tagRepository.findOneBy({ uuid });
         if (!tag) {

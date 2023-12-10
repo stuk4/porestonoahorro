@@ -30,7 +30,11 @@ export class TagsController {
     findAll(@Query() paginationDto: PaginationDto) {
         return this.tagsService.findAll(paginationDto);
     }
-
+    @Get('autocomplete')
+    @Auth(Role.USER)
+    autocomplete(@Query('q') q: string) {
+        return this.tagsService.autocompleteByName(q);
+    }
     @Get(':uuid')
     @Auth(Role.ADMIN)
     findOne(@Param('uuid', ParseUUIDPipe) uuid: string) {

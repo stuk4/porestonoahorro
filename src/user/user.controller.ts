@@ -32,7 +32,7 @@ export class UserController {
     @Post('file')
     @Auth(Role.USER)
     @UseInterceptors(FilesInterceptor('files', 3))
-    uploadTempProductImage(
+    uploadTempUserImage(
         @UploadedFiles(
             new ParseFilePipe({
                 validators: [
